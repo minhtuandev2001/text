@@ -1,0 +1,105 @@
+Bạn sẽ học ?
+1. Cách kết hợp reduce với context
+2. 
+3. Cách giữ logic ngữ cảnh và trạng thái trong một tệp riêng.
+
+//// Kết hợp một useReducer với Context
+VÍ DỤ :
+App.js (chuyển danh sách các tác vụ và trình xử lý sự kiện tới TaskList)
+<TaskList
+        tasks={tasks}
+        onChangeTask={handleChangeTask}
+        onDeleteTask={handleDeleteTask}
+      />
+TaskList.js (và từ TaskList truyền các tác vụ và trình xử lý sự kiện tới Task)
+ <Task
+            task={task}
+            onChange={onChangeTask}
+            onDelete={onDeleteTask}
+          />
+==== App gửi sự kiện
+: Vấn đề : useReduce giúp giữ cho trình xử lý sự kiện ngắn gọn và súc tích. Tuy nhiên, khi ứng dụng của bạn phát triển, bạn có
+thể gặp phải một số khó khăn khác. Hiện tại, task state và dispatch chức năng chỉ khả dụng trong App.js(cao nhất) . Để cho phép
+các thành phần khác đọc được danh sách tác vụ hoặc thay đổi nó, bạn phải truyền rõ rán state hiện tại và trình xử lý sự kiện
+thay đổi nó dưới dạng đạo cụ (ví dụ trên)
+
+: Giải quyết, để thay thế cho việc chuyển chúng qua các đạo cụ, bạn có thể muốn đặt cả task state và dispatch chắc năng vào 
+Context. Bằng cách này, bất kỳ thành phần nào bên dưới App trong cây đều có thể đọc được các tác vụ và gửi các actions mà 
+không cần "props drilling" lặp đi lặp lại.
+
+/// CÁCH KẾT HỢP USEREDUCE VÀ CONTEXT
+b1. tạo context
+b2. đặt state và dispatch vào context
+b3. sử dụng context bất cứ nơi nào trong cây
+
+B1: TẠO CONTEXT
+: useReducer Hook trả về giá trị hiện tại task, và hàm dispatch cho phép bạn cập nhật chúng:
+	vd: const [task, dispatch] = useReducer(tasksReducer, initialTask);
+	Để chuyển chúng xuống cây, bạn sẽ tạo hai ngữ cảnh riêng biệt :
+		- TasksContext cung cấp danh sách các task hiện tại
+		- TasksDispatchContext cung cấp chức năng cho phép các thành phần gửi actions
+TasksContext.js
+import { createContext } from 'react';
+
+export const TasksContext = createContext(null);
+export const TasksDispatchContext = createContext(null);
+
+== Tại đây bạn đang chuyển null làm giá trị mặc định cho cả hai context. Các giá trị thực tế sẽ được cung cấp bởi component App
+
+B2: ĐẶT STATE VÀ DISPATCH VÀO CONTEXT
+: bây giờ nhập cả 2 context trong component App của mình. lấy tasks và dispatch trả lại bởi useRedducer() và cung cấp cho toàn bộ
+cây bên dưới.
+
+App.js
+import { TasksContext, TasksDispatchContext } from './TasksContext.js';
+
+export default function TaskApp() {
+  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  // ...
+  return (
+    <TasksContext.Provider value={tasks}>
+      <TasksDispatchContext.Provider value={dispatch}>
+        ...
+      </TasksDispatchContext.Provider>
+    </TasksContext.Provider>
+  );
+} 
+--> bước tiếp theo, bạn sẽ loại bỏ việc truyền props
+
+B3: SỬ DỤNG CONTEXT Ở BẤT CỨ ĐÂU TRONG CÂY
+: giờ đây bạn không cần chuyển danh sách task hoặc trình xử lý sự kiện xuống dưới dạnh cây
+Giờ đây, bạn không cần chuyển danh sách tác vụ hoặc trình xử lý sự kiện xuống dưới dạng cây:
+
+<TasksContext.Provider value={tasks}>
+  <TasksDispatchContext.Provider value={dispatch}>
+    <h1>Day off in Kyoto</h1>
+    <AddTask />
+    <TaskList />
+  </TasksDispatchContext.Provider>
+</TasksContext.Provider>
+
+: thay vào đó, bất kỳ thành phần nào cần danh sách nhiệm vụ đều có thể đọc nó từ TaskContext
+	vd: const tasks = useContext(TasksContext);
+
+export default function TaskList() {
+  const tasks = useContext(TasksContext);
+
+: để cập nhật danh sách task, bất kì thành phần nào cũng có thể đọc dispatch hàn từ context và gọi nó:
+
+export default function AddTask() {
+  const [text, setText] = useState('');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

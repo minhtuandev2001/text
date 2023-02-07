@@ -1,0 +1,14 @@
+Bạn sẽ học :
+	- function reduce là gì
+	- Làm thế nào để cấu trúc useState lại useReducer
+	- Khi nào nên sử dụng useReducer
+	- Làm thế nào để viết tốt
+
+Nhưng hãy nhớ rằng các loại hành động lý tưởng nhất nên mô tả “những gì người dùng đã làm” 
+hơn là “bạn muốn trạng thái thay đổi như thế nào”. Điều này làm cho nó dễ dàng hơn để thêm nhiều tính năng sau này.
+
+Với một trong hai giải pháp, điều quan trọng là bạn không đặt alert bên trong bộ giảm tốc. 
+Bộ giảm tốc phải là một hàm thuần túy—nó(pure) chỉ nên tính toán trạng thái tiếp theo. 
+Nó không nên “làm” bất cứ điều gì, kể cả hiển thị thông báo cho người dùng.
+Điều đó sẽ xảy ra trong trình xử lý sự kiện. (Để giúp phát hiện những lỗi như thế này, React sẽ gọi bộ giảm tốc của 
+bạn nhiều lần trong Chế độ nghiêm ngặt. Đây là lý do tại sao, nếu bạn đặt cảnh báo trong bộ giảm tốc, nó sẽ kích hoạt hai lần.)

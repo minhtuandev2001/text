@@ -1,0 +1,628 @@
+tạo thư mục
+npm install -g expo-cli
+expo init [ten du an]
+
+cd [ten du an]
+npm start
+
+expo install firebase
+
+vào package.json thay 8.2.3
+
+ npm install
+
+cài đặt môi trường lúc học react native 
+https://www.youtube.com/watch?v=Q79LL9KAGdk&t=508s
+----------------------------------------------------------------------
+CÁC THƯ VIỆN CÀI LÚC HỌC
+1. npm install --save react-native-vector-icons (https://viblo.asia/p/them-fonts-va-fonticons-vao-ung-dung-react-native-1VgZvwD2lAw)
+----------------------------------------------------------------------
+
+npx react-native init NameProject --version x.xx.x
+
+==>terminal 1
+npx react-native start
+
+// Chạy máy ảo lên trước
+==>terminal 2
+npx react-native run-android
+/////////////////////////////////////////////////////////// HEIGHT AND WIDTH ///////////////////////////////////////////////////////////
+==> Fixed Dimensions (kích thước cố định) : phù hợp các thành phần có kích thước luôn cố định và không tính toán dựa trên kích thước 
+màn hình.
+	- ví dụ : height : 300 , width : 300
+==> Flex Dimensions (kích thước linh hoạt) : thành phần mở rộng và thu nhỏ dựa trên không gian có sẵn, kích thước của cha phải lớn 
+hơn 0 thì mới hiển thị.
+	- ví dụ :
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      <View style={{ flex: 1, backgroundColor: 'powderblue' }} />
+      <View style={{ flex: 2, backgroundColor: 'skyblue' }} />
+      <View style={{ flex: 3, backgroundColor: 'steelblue' }} />
+    </View>
+==> Percentage Dimensions (kích thước phần trăm) : linh hoạt như flex dimension , cũng yêu cầu cha có kích thước lớn > 0 mới hiển thị
+	- ví dụ : 
+    <View style={{ height: '100%' }}>
+      <View style={{
+        height: '15%', backgroundColor: 'powderblue'
+      }} />
+      <View style={{
+        width: '66%', height: '35%', backgroundColor: 'skyblue'
+      }} />
+      <View style={{
+        width: '33%', height: '50%', backgroundColor: 'steelblue'
+      }} />
+    </View>
+/////////////////////////////////////////////////////////// LAYOUT WITH FLEXBOX ////////////////////////////////////////////////////////
+: Một thành phần có thể chỉ định bố cục của các thành phần con của nó bằng các sử dụng thuật toán FlexBox
+: Cung cấp bố cục nhất quán trên các kích thước màn hình khác nhau.
+: kết hợp flexDirection, alignItem và justifyContent để đạt được bố cụ phù hợp.
+	ví dụ : 
+<View style={[styles.container, {
+      // Try setting `flexDirection` to `"row"`.
+      flexDirection: "column"
+    }]}>
+      <View style={{ flex: 1, backgroundColor: "red" }} />
+      <View style={{ flex: 2, backgroundColor: "darkorange" }} />
+      <View style={{ flex: 3, backgroundColor: "green" }} />
+</View>
+
+==> flexDirection : kiểm soát hướng bố trí các nút con 
+	- option : column , row , column-reverse , row-reverse
+==> justifyContent : căn chỉnh các phần tử con trong vùng chứa , ngang khi flexDirection : 'row' , dọc khi flexDirection : 'column'
+	- option : flex-start, flex-end, center, space-between, space-around, space-evenly
+==> alignItems : căn chỉnh các phần tử con theo hướng vuông góc với trục chính 
+	- option : stretch, flex-start, flex-end, center, baseline
+==> alignself : có các option giống với alignItems , áp dụng thuộc tính này cho MỘT phần tử con để thay đổi sự liên kết trong phần tử cha.
+==> alignContent : hiệu lực khi sử dụng cùng flexWrap
+==> flexWrap : kiểm soát khi con cái làm tràn vùng chứa
+	- option : wrap , nowrap
+==> absolute & relative layout (bố cục tuyệt đối và tương đối)
+: xác định cách nó được định vị trong phần tử cha nó
+	- option : relative , absolute
+
+/////////////////////////////////////////////////////////// ANIMATED ///////////////////////////////////////////////////////////////////
+: Thực chất là một chuỗi các hình ảnh tĩnh nối tiếp nhau liên tục.
+////Animated.Value() : cho các giá trị đơn lẻ
+--> Method
+
+	- setValue(value) : Trực tiếp đặt giá trị. Thao tác này sẽ dừng mọi hoạt ảnh đang chạy trên giá trị và cập nhật tất cả thuộc tính
+ràng buộc.
+	- setOffset(offset)(giá trị bù) : Đặt offset được áp dụng trên bất kỳ giá trị nào được set, cho dù thông qua setValue hay 
+Animate.event (dùng trong onPanResponderGrant)
+==== Vì sao sử dụng Offset :
+Ví dụ:
+/*
+Bạn đang ở ví trí { x: 0, y: 0 }
+Bạn swipe lần 1 lên phía trên và khoảng cách là 200
+Bạn dừng swipe
+Bạn lại swipe lần thứ 2 lên phía trên và khoảng cách là 200
+Với bài toán này thì ở lần thứ 2 chúng ta mong muốn rằng điểm xuất phát phải ở { x: 0, y: 200 } đúng ko ạ.
+
+Và mục đích của onPanResponderGrant là để giải quyết bài toán ở trên, chúng ta set Offset chính là vị trí hiện tại (trước khi thực hiện swipe), 
+và sau đó dựa vào giá trị này chúng ta có thể tính toán chính xác toạ độ bắt đầu và toạ độ di chuyển.
+
+Còn giá trị Value sau khi lưu trữ bằng cách set Offset thì chúng ta sẽ tiến hành reset nó về { x: 0, y: 0 }
+*/
+	- flattenOffset() : Hợp nhất giá trị offset vào base value sau đó đặt giá trị bù = 0.
+	- extracOffset() : đặt value Offset thành giá trị base value và dặt giá trị base value thành 0.
+	- addListener(callback) : thêm trình nghe không đồng bộ vào giá trị để có thể quan sát các cập nhật từ hoạt ảnh.
+	- removeListener(id) : Hủy đăng ký người nghe. Thông số id phải khớp với mã định danh được trả về trước đó bởi addListener().
+	- removeAllListeners() : Xóa tất cả người ngghe đã đăng ký
+	- stopAnimation() : Dừng mọi hoạt ảnh hoặc theo dõi đang chạy. callback được gọi với giá trị cuối cùng sau khi dừng hoạt ảnh,
+Điều này hữu ích cho việc cập nhật trạng thái để khớp với vị trí hoạt ảnh với bố cục.
+	- resetAnimation([callback]) : dừng bất kỳ hoạt ảnh nào và đặt lại giá trị ban đầu.
+	- interpolate() : Nội suy giá trị trước khi cập nhật thuộc tính, ví dụ: ánh xạ 0-1 đến 0-10.
+	- animate(animation, callback) : Thường chỉ được sử dụng trong nội bộ, nhưng có thể được sử dụng bởi một lớp Hoạt ảnh tùy chỉnh.
+	- stopTracking()
+	- track()
+////Animated.ValueXY() cho vecter
+--> Method
+	- setValue(value) : 
+	- setOffset(offset)(giá trị bù) : 
+	- flattenOffset() : Hợp nhất giá trị offset vào base value sau đó đặt giá trị bù = 0.
+	- extracOffset() : đặt value Offset thành giá trị base value và dặt giá trị base value thành 0.
+	- addListener(callback) : thêm trình nghe không đồng bộ vào giá trị để có thể quan sát các cập nhật từ hoạt ảnh.
+	- removeListener(id) : Hủy đăng ký người nghe. Thông số id phải khớp với mã định danh được trả về trước đó bởi addListener().
+	- removeAllListeners() : Xóa tất cả người ngghe đã đăng ký
+	- stopAnimation() : Dừng mọi hoạt ảnh hoặc theo dõi đang chạy. callback được gọi với giá trị cuối cùng sau khi dừng hoạt ảnh,
+Điều này hữu ích cho việc cập nhật trạng thái để khớp với vị trí hoạt ảnh với bố cục.
+	- resetAnimation([callback]) : dừng bất kỳ hoạt ảnh nào và đặt lại giá trị ban đầu.
+	- getLayout() : chuyển đổi {x,y} sang {left, top} để sử dụng trong kiểu.
+	- getTranslateTransform() :
+: Animate.Value có thể liên kết với các properties hoặc props và cũng có thể được nội suy. Một Animated.Value duy nhất có thể điều khiển 
+bất kỳ số lượng thuộc.
+
+// các bước thực hiện :
+1. animation hoạt động như thế nào.
+2. sử dụng style properties nào cho animation đó.
+3. sử dụng animated value nào cho animation đó.
+4. thay đổi animated value như thế nào( decay, timing, spring).
+5. Apply animated này vào component nào.
+
+
+==> Composing animations (kết hợp animation)
+Animated API cung cấp cho chúng ta những hàm kết hợp sau đây, tất cả đều nhận vào một mảng animations:
+Animated.delay(timae) : bắt đầu hoạt ảnh sau một độ trể nhất định.
+Animated.parallel(animations, config) : chạy đồng thời song song với nhau.
+Animated.sequence(animations) : bắt đầu các hoạt ảnh theo thứ tự, đợi mỗi hoạt ảnh hoàn thành trước khi bắt đầu tiếp theo.
+Animated.stagger(time, animations) : Giống với parallel nhưng animation sau sẽ bị delay 1 khoảng thời gian so với các trước
+
+-> các hoạt ảnh cũng có thể được liên kết với nhau bằng cách đặt toValue của một hoạt ảnh thành Animate.Value khác.
+-> mạc định, nếu một hoạt ảnh bị gián đoạn, thì tát cả các hoạt ảnh khác trong nhóm cũng bị dừng lại.
+
+==> Combining animated values (kết hợp các giá trị động )
+: Bạn có thể kết hợp hai giá trị hoạt ảnh thông qua phép cộng, trừ, nhân, chia hoặc modulo để tạo một giá trị động.
+
+Animated.add()
+Animated.subtract()
+Animated.divide()
+Animated.modulo()
+Animated.multiply()
+
+==> Interpolation (phép nội suy )
+: hàm interpolate(): - cho phép các phạm vi đầu vao ánh xạ tới các phạm vi đầu ra khác nhau. 
+	               - Theo mặc định nó sẽ ngoại suy đường cong ngoài phạm vi đã cho, nhưng cũng có thể để nó kẹp giá trị đầu ra.
+		         - sử dụng interpolation(nội suy tuyến tính) theo mặc định nhưng cũng hỗ trợ các (easing function) chức năng nới lỏng.
+
+==> Handling gestures and other events ( xử lý cử chỉ và các sự kiện khác)
+:Cử chỉ : xoay hoặc cuộn và các sự kiện khác có thể ánh xạ trực tiếp tới các giá trị hoạt ảnh bằng Animated.event(). Điều này được thực hiện
+với cú pháp structured map để các giá trị có thể được trích xuất từ các đối tượng sự kiện phức tạp. Mức đầu tiên là một mảng để cho phép 
+ánh xạ qua nhiều args và mảng đó chứa các đối tượng lồng nhau.
+	ví du :
+ onScroll={Animated.event(
+   // scrollX = e.nativeEvent.contentOffset.x
+   [{ nativeEvent: {
+        contentOffset: {
+          x: scrollX
+        }
+      }
+    }]
+ )}
+//////////////////////////// METHOD 
+- Animated.timing : Thực hiện animation theo thời gian quy định.
+- Animated.decay : Thực hiện animation mô phỏng chuyển động có tốc độ giảm dần về cuối.
+- Animated.spring : Thực hiện animation mô phỏng cơ chế vật lý của lò xo.
+
+////Config của 3 thằng này đều có :
+
+1. toValue : value animation bạn muốn đạt tới.
+2. useNativeDriver: Sử dụng native Thread để xử lý thay vì JS Thread, mặc định là FALSE
+3. isInteraction: Có hay không cho phép animation này tạo một interaction handle trên InteractionManager, mặc định TRUE.
+(giúp bạn lên lịch những task và thực thi chúng sau khi tương tác/animation hoàn thành)
+
+////useNativeDriver
+--> theo kiến trúc thì RN có 2 thread:
+1. JS Thread.
+2. UI Thread (Main thread, Native thread, ...)
+
+Nếu bạn set useNativeDriver: false thì JS Thread sẽ phải xử lý hết cả render animation cả JS code ..., nếu tác vụ quá nặng thì nó sẽ gây ra 
+drop fps, tệ hơn là treo. Còn nếu bạn set useNativeDriver: true thì lúc này thàng JS Thread sẽ chỉ phải xử lý phần JS Code, nên giảm thiểu 
+khả năng bị drop fps.
+
+--> useNativeDriver : thằng này support cho non-layout (transform, opacity....) còn lại mấy cái liên quan đến layout như flexbox hay 
+position thì nó không dùng được.
+
+//// Animated.timing
+: timing : - cho phép chúng ta định nghĩa thời gian animation thực hiện. Thường được sử dụng nếu bạn cần giá trị ban đầu của animation này đạt 
+đến giá trị bạn mong muốn trong một khoảng thời gian quy định.
+	     - Chuyển động timing được xác định bằng easing function(easing funtion là hàm số thể hiện tốc độ thay đổi của tham số theo thời gian.)
+--> syntax timing(value, config)
+	- 2 tham số :
+1. value :Animated.Value
+2. config:
+	- duration: thời gian animatioon thực hiện.
+	- easing: Sử dụng Easing module, mặc định là Easing.inOut(Easing.ease)
+	- delay : delay một khoảng thời gian.
+
+//// Animated.decay 
+: decay : - Cho phép chúng ta thực hiện một animation có tốc độ giảm dần về 0 dựa trên decay confficient.
+	    -	Hiểu đơn giản thì decay tạo ra animation bắt đầu với một vận tốc nào đó, xong rồi chậm dần đều tới khi nào dừng.
+	    - Thường được kết hợp với PanResponder để làm mấy cái để làm animation "ném , quăng", giống như scrollview, lúc đầu thì trôi nhanh xong
+sau đó sẽ chậm lại cho đến khi dừng hẳn.
+
+--> syntax decay(value, config)
+	- 2 tham số :
+1. value  :Animated.value
+2. config :
+	- velocity : Vận tốc của animation(bắt buộc)
+	- decelertion : Giảm tốc - vận tóc giảm đi, mặc định là 0.997
+
+////Animated.spring 
+: spring : - cho phép chúng ta thực hiện một animation mô phỏng cơ chế vật lý ngoài đời thực.
+--> syntax spring(value , config)
+	- 2 tham số :
+1. value : Animated.value
+2. config
+	- friction : Kiểm soát độ đàn hồi/vượt mức . Mặc định 7.
+	- tension : Kiểm soát tốc dộ animation, Mặc định là 40.
+	- speed : kiểm soát tốc độ của animation. Mặc định là 12.
+	- bouciness : Kiểm soát tốc độ đàn hồi. Mặc định là 8.
+	- stiffness : Hệ số độ cứng của lò xo. Mặc định là 100.
+	- daming : Hệ số giảm xóc do ma sát. Mặc định là 10.
+	- mass : Khối lượng của vật gắn vào cuối là xo. Mặc định 1.
+--> Chỉ có thể sử dụng 1 trong 2 cặp sau :
++ bounciness/speed, tension/friction hoặc stiffness/damping/mass nhưng không nhiều hơn 1.
+
+////Interpolation(Nội suy)
+: Hiểu đơn giản thì đây là một hàm dùng để map Input với Output. Thằng này còn có tên khác là Keyframe, chủ yếu là dùng trong trường hợp bạn muốn
+kiểm soát đường đi của animation .
+	: Ví dụ : có một animation có input = 1 -> output = 100, nếu như bình thường thì nó vẫn chạy thằng từ 1 -> 100 nhưng giờ muốn nó chạy từ 1 ->
+50 -> 30 -> 100 thì phải dùng interpolate()
+
+transform: [
+        {
+	    translateX: aniValue.interpolate({
+          inputRange: [0, 0.2, 0.8, 1],
+          outputRange: [0, 50, 30, 100],
+          extrapolate: 'clamp'
+        }),
+      },
+  ],
+--> lưu ý : - Giá trị trong inputRange luôn tăng. Interpolation mặc định sử dụng linear nhưng bạn có thể set cho nó easing function khác
+	      - Kết hợp được nhiều animation bằng interpolation.
+	      - extrapolate(ngoại suy), hiểu đơn giản thì nó là cách tính các giá trị ngoài phạm vi
+--> có 3 loại extrapolate chính :
+	- extend : Ngoại suy dựa theo nội các giá trị nội suy trước đó(Mặc định).
+	- clamp : Ngoại suy sẽ bằng với giá trị cuối cùng của nội suy (nghĩa là khi inputRange la 1.5 thì outputRange vẫn là 100 :-> ví dụ trên).
+	- identity : lấy bất cứ giá trị nào sau giá trị nội suy, nhưng không dựa theo nội suy trước đó.
+
+////PanResponder
+: Kết hợp nhiều lần chạm vào một gesture(cử chỉ: vuốt, chạm), nhận ra các gesture đa chạm(multi-touch)
+: Có InteractionManager để chặn các sự kiện JS chạy dài làm gián đoạn các cử chỉ đang hoạt động.
+: Nó cung cấp một trình bao bọc có thể dự đoán được của trình xử lý phản hồi được cung cấp gesture responde system (hệ thống phản hồi cử chỉ). 
+Đối với mỗi tình xử lý, nó cung cấp một đối tượng gesture mới cùng với đối tượng sự kiện gốc. 
+	: ví dụ : onPanResponderMove: (event, gestureState) => {}
+--> Responder lifecycle :
+	- onStartShouldSetPanResponder: (e, gestureState) => {....} : chế độ xem này có muốn trở thành responder khi bắt đầu chạm không
+	- onStartShouldSetPanResponderCapture: (e, gestureState) => {....} : 
+	- onMoveShouldSetPanResponder: (e,gestureState) => {....} : Được gọi cho mỗi lần di chuyển chạm trên View khi nó không phải là
+responder : View này có muốn "xác nhận" khả năng phản hồi khi chạm không
+	- onMoveShouldSetPanResponderCapture: (e, gestureState) => {....} : 
+	- onPanResponderGrant: (e, gestureState) : được gọi khi người dùng touch vào màn hình.
+	- onPanResponderReject: (e, gestureState) :
+	- onPanResponderStart: (e, gestureState) :
+	- onPanResponderEnd: (e, gestureState) :
+	- onPanResponderRelease: (e, gestureState): được gọi khi người dùng nhấc tay khỏi màn hình ứng dụng.
+	- onPanResponderMove(e, gestureState): được gọi khi người dùng di chuyển ngón tay trên màn hình chúng ta.
+
+Mỗi funtion đều nhận vào 2 tham số EVENT , GESTURESTATE
+--> gestureState :
+	- stateID : Id củ event touch.
+	- moveX : Khoảng cách từ vị trí touch hiện tại so với cạnh trái của màn hình.
+	- moveY : Khoảng cách từ vị trí touch hiện tại so với cạnh trên của màn hình.
+	- x0 : khoảng cách từ vị trí touch ban đầu so với cạnh trái màn hình.
+	- y0 : khoảng cách từ vị trí touch ban đầu so với cạnh trên của màn hình.
+	- dx(distance x) : độ chênh lệch theo chiều X của vị trí hiện tại so với vị trí ban đầu.
+	- dy(distance y) : độ chênh lệch theo chiều Y của vị trí hiện tại so với vị trí ban đầu.
+	- vx(velocity x) : vận tốc di chuyển ngón tay theo chiều ngang.
+	- vy(velocity y) : vận tốc di chuyển ngón tay theo chiều dọc.
+	- numberActiveTouches: số lượng touch trên màn hình.
+--> event :
+: event chính là touch event, đối tượng này có rất nhiều thuộc tính nhưng chúng ta cần quan tâm là nativeEvent
+	- changedTouches : một mảng gồm tất cả các sự kiện touch từ sự kiện cuối cùng
+	- identifier : hệ thống sẽ tự gen cho chúng ta một ID cho mỗi event
+	- locationX : khoảng cách từ vị trí touch đến lề trái của view mà chúng ta gán vào PanResponder.
+	- locationY : khoảng cách từ vị trí touch đến lề trên của view mà chúng ta gán váo PanResponder.
+	- pageX : khoảng cách từ vị trí touch đến lề trái của rootview.
+	- pageY : khoảng cách từ vị trí touch đến lề trên của rootview.
+	- target : id của view mà chúng ta gán vào PanResponder
+	- timestamp : thời gian khi chúng ta touch, thường được sử dụng để tính vận tốc di chuyển trên màn hình
+	- touches : một mảng bao gồm tất cả sự kiện touch đang có trên màn hình ứng dụng.
+--> nativeEvent liên quan đến view , còn gestureState liên  quan đến màn hình .
+
+/////////////////////////////////////////////////////// LAYOUTANIMATION //////////////////////////////////////////////
+: Tự động chuyển các chế độ xem đến vị trí mới của chúng khi bố cục tiếp theo xảy ra.
+: Một cách phổ biến để sử dụng API này là gọi nó trước khi cập nhật state hook trong các function component.
+--> Lưu ý để tính năng này hoạt động trên android, cần phải đặt các cờ sau qua UIManager:
+-------------------------------------------------------------------------
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+-------------------------------------------------------------------------
+////Method
+	- configureNext(config, onAnimationDidEnd? , onAnimationDidFail?)
+
+		: Lên lịch cho một animation xảy ra trên bố cục tiếp theo.
+		: trong đó : config là một đối tượng gồm các key , create trả về một đối tượng hợp lệ cho cấu hình và tất
+cả các đối tượng Presets cũng có thể được chuyển dưới dạng cấu hình.
+			+ duration : thời gian tính bằng mili giây
+			+ create : optional tùy chọn để tạo hoạt ảnh trong các chế độ xem mới
+			+ update : optional tùy chọn cho các chế độ xem hoạt ảnh đã được cập nhật
+			+ delete : optional tùy chọn cho các chế độ xem hoạt ảnh khi chúng bị xóa
+		  - config được chuyển để create, update hoặc delete có các khóa sau :
+			+ type: loại hoạt ảnh để sử dụng 
+			+ property : thuộc tính bố cục để tạo hoạt ảnh(optional nhưng được khuyến nghị để create và delete)
+			+ springDamping : (number, optional và chỉ sử dụng với type : Type.spring)
+			+ initialVelocity(number,optional)
+			+ delay (number, optional)
+			+ duration(number, optional)
+
+	- create(duration, type, creationProp)
+		: Tạo một đối tượng với các fields (create, update và delete) để chuyển vào configureNext. 
+		: type : animationType
+		: creationProp : layout property (thuộc tính bố cục)
+//// property
+	- Types : danh sách các loại hoạt ảnh sẽ được sử dụng trong phương thức CREATE , hoặc trong optional create/update
+/delete cho configureNext
+		  : ví dụ : LayoutAnimaion.Types.easeIn
+		  : + spring , linear, easeInEaseOut, easeIn, easeOut, keyborad
+	- Properties : một bảng liệt kê các thuộc tính bố cục sẽ được làm động để sử dụng trong phương thức CREATE hoặc
+config create/update và delete cho configNext 
+		  : ví dụ : LayoutAnimation.Properties.opacity
+		  : + opacity , scaleX, scaleY, scaleXY
+//// Preset 
+: một tập hợp các cấu hình hoạt ảnh được xác định trước để chuyển vào configNext
+	- easeInEaseOut : create(300, 'easeInEaseOut', opacity)
+	- linear : create(500, 'linear', 'opacity')
+	- spring : {duration: 700, create : {type: 'linear', property: 'opacity'}, update : {type : 'spring', springDamping: 0.4}, 
+delete : {type: 'linear', property: 'opacity'}}
+--> easeInEaseOut : gọi configureNext() với Presets.easeInEaseOut.
+--> linear : gọi configureNext() với Presets.linear.
+--> spring : gọi configureNext() với Presets.spring.
+
+///////////////////////////////////////////////////////////// react-native webRtc////////////////////////////////////////////////////////
+navigator.mediaDevices.getUserMedia()
+navigator.mediaDevices.getDisplayMedia()
+navigator.mediaDevices.enumerateDevices()
+window.RTCPeerConnection
+window.RTCIceCandidate
+window.RTCSessionDescription
+window.MediaStream
+window.MediaStreamTrack
+
+//// số lượng máy ảnh trên devices (Get Available Media Devices)
+let cameraCount = 0;
+
+try {
+	const devices = await mediaDevices.enumerateDevices(); *
+
+	devices.map( device => {
+		if ( device.kind != 'videoinput' ) { return; };
+
+		cameraCount = cameraCount + 1;
+	} );
+} catch( err ) {
+	// Handle Error
+};
+
+//// xác định các ràng buộc về phương tiện (Defining Media Constraints)
+let mediaConstraints ={
+	audio: true,
+	video: {
+		frameRate: 30,
+		facingMode: 'user',
+	}
+};
+--> gửi cả âm thanh lẫn video , cho phép chúng ta chuyển đổi luồng video trong khi gọi.
+
+//// Nhận Media Stream bằng getUserMedia (Getting a Media Stream using getUserMedia)
+--> Nếu bạn chỉ muốn một cuộc gọi thoại thì bạn có thể chuyển isVoiceOnly thành true. sau đó bạn có thể bặt hoặc tắt video theo yêu cầu
+trong khi gọi.
+let localMediaStream;
+let isVoiceOnly = false;
+
+try {
+	const mediaStream = await mediaDevices.getUserMedia( mediaConstraints );
+
+	if ( isVoiceOnly ) {
+		let videoTrack = await mediaStream.getVideoTracks()[ 0 ];
+		videoTrack.enabled = false;
+	};
+
+	localMediaStream = mediaStream;
+} catch( err ) {
+	// Handle Error
+};
+
+//// Nhận Media Stream bằng getDisplayMedia (Getting a Media Stream using getDisplayMedia)
+--> Thao tác này sẽ cho phép chụp màn hình thiết bị, đồng thời yêu cầu quyền thực thi , có giải pháp coi lại
+try {
+	const mediaStream = await mediaDevices.getDisplayMedia();
+
+	localMediaStream = mediaStream;
+} catch( err ) {
+	// Handle Error
+};
+
+//// Destroying (phá hủy luồng phương tiện) (Destroying the Media Stream)
+--> chỉ phá hủy trên máy mình (local)
+localMediaStream.getTracks().map(
+	track => track.stop()
+);
+
+localMediaStream = null;
+
+//// xác định các ràng buộc ngang hàng (Defining Peer Constraints)
+STUN + TURN , cải thiện độ tin cậy của cuộc gọi
+let peerConstraints = {
+	iceServers: [
+		{
+			urls: 'stun:stun.l.google.com:19302'
+		}
+	]
+};
+
+//// Tạo kết nối ngang hàng (create  peer Connection)
+--> tạo một kết nối ngang hàng cần thiết để bắt đầu cuộc gọi. Bạn cũng có thể kết nối các sự kiện bằng cách ghi đè trực tiếp các chức năng
+thay vì sử dụng trình nghe sự kiện.
+let peerConnection = new RTCPeerConnection( peerConstraints );
+
+peerConnection.addEventListener( 'connectionstatechange', event => {} );
+peerConnection.addEventListener( 'icecandidate', event => {} );
+peerConnection.addEventListener( 'icecandidateerror', event => {} );
+peerConnection.addEventListener( 'iceconnectionstatechange', event => {} );
+peerConnection.addEventListener( 'icegatheringstatechange', event => {} );
+peerConnection.addEventListener( 'negotiationneeded', event => {} );
+peerConnection.addEventListener( 'signalingstatechange', event => {} );
+peerConnection.addEventListener( 'addstream', event => {} );
+peerConnection.addEventListener( 'removestream', event => {} );
+
+//// Phá hủy kết nối ngang hàng (Destroying the Peer Connection)
+--> khi kết thục cuộc gọi, bạn phải luôn đảm bảo rằng mọi thứ đã sẵn sàng cho một cuộc gọi khác.
+peerConnection._unregisterEvents();
+peerConnection.close();
+peerConnection = null;
+
+//// Thêm luồng sự kiện (adding the media stream)
+--> sau khi sử dụng một trong các chức năng media ở trên, bạn có thể thêm media stream và peer.
+peerConnection.addStream( localMediaStream );
+
+//// Tạo kênh dữ liệu (Create a Data Channel)
+--> thông thường trình khởi tạo cuộc gọi sẽ tạo kênh dữ liệu nhưng nó có thể được thực hiện ở cả 2 phía.
+let datachannel = peerConnection.createDataChannel( 'my_channel' );
+
+datachannel.addEventListener( 'open', event => {} );
+datachannel.addEventListener( 'close', event => {} );
+datachannel.addEventListener( 'message', message => {} );
+
+//// xử lý các kênh dữ liệu
+--> Sự kiện sau đây dành cho máy khách thứ 2, không phải máy khách đã tạo kênh dữ liệu, trừ khi bạn muốn cả 2 bên cùng tạo ra kênh dữ liệu
+riêng biệt.
+peerConnection.addEventListener( 'datachannel', event => {
+	let datachannel = event.channel;
+
+	// Now you've got the datachannel.
+	// You can hookup and use the same events as above ^
+} );
+
+
+//// gửi tin nhắn qua kênh dữ liệu (Sending a Message via the Data Channel)
+--> Bạn có thể gửi một loạt các kiểu dữ liệu khác nhau qua các kênh dữ liệu, chúng tôi đang cố gắng gửi một chuỗi đơn giản. gửi lượng lớn dữ 
+liệu không được khuyên dùng.
+
+datachannel.send( 'Hey There!' );
+
+//// Phá hủy kênh dữ liệu (Destoying the data Channel)
+--> Khi kết nối peer bị hủy, các kênh dữ liệu cũng sẽ tự động bị hủy. Bạn nên tự đóng chúng.
+datachannel.close();
+datachannel = null;
+
+//// Xác định ràng buộc phiên (Defining Session Constraints)
+--> Như đã đề cập ở trên theo mặc định, chúng tôi sẽ áp dụng phương pháp cung cấp cả video và giọng nói. Điều đó cho phép bạn bật và tắt 
+luồng video theo yêu cầu trong khi cuộc gọi đang hoạt động.
+
+let sessionConstraints = {
+	mandatory: {
+		OfferToReceiveAudio: true,
+		OfferToReceiveVideo: true,
+		VoiceActivityDetection: true
+	}
+};
+
+//// Creating an offer
+--> được thực thi bởi trình khởi tạo cuộc gọi sau khi các stream media đã được thêm vào kết nối peer
+try {
+	const offerDescription = await peerConnection.createOffer( sessionConstraints );
+	await peerConnection.setLocalDescription( offerDescription );
+
+	// Send the offerDescription to the other participant.
+} catch( err ) {
+	// Handle Errors
+};
+
+//// Tạo câu trả lời (Creating an Answer)
+--> Tất cả các bên sẽ cần phải đảm bảo rằng họ đang xử lý các Ứng viến ICE một cách chính xác.
+try {
+	// Use the received offerDescription
+	const offerDescription = new RTCSessionDescription( offerDescription );
+	await peerConnection.setRemoteDescription( offerDescription );
+
+	const answerDescription = await peerConnection.createAnswer( sessionConstraints );
+	await peerConnection.setLocalDescription( answerDescription );
+
+	// Send the answerDescription back as a response to the offerDescription.
+} catch( err ) {
+	// Handle Errors
+};
+
+//// Chuyển đổi Micro hoạt động (Toggle the active Microphone)
+--> Trong một cuộc gọi bạn có thể muốn tắt tiếng micro của mình . dẽ dàng thực hiện bằng cách đặt false, cũng có thể thực hiện trên remote
+stracks.
+
+
+let isMuted = false;
+
+try {
+	const audioTrack = await localMediaStream.getAudioTracks()[ 0 ];
+	audioTrack.enabled = !audioTrack.enabled;
+
+	isMuted = !isMuted;
+} catch( err ) {
+	// Handle Error
+};
+
+//// Chuyển đổi máy ảnh đang hoạt động (Sưitching the Active Camera)
+--> Đương nhiên biết rằng bạn sẽ sử dụng camera trước theo mặc định khi bắt đầu cuộc gọi.
+
+let isFrontCam = true;
+
+try {
+	// Taken from above, we don't want to flip if we don't have another camera.
+	if ( cameraCount < 2 ) { return; };
+
+	const videoTrack = await localMediaStream.getVideoTracks()[ 0 ];
+	videoTrack._switchCamera();
+
+	isFrontCam = !isFrontCam;
+} catch( err ) {
+	// Handle Error
+};
+
+
+//// Hiển thị Media Stream
+--> Khi bạn đã có được local and/or remote stream , hãy kết xuất.
+<RTCView
+	mirror={true}
+	objectFit={'cover'}
+	streamURL={localMediaStream.toURL()}
+	zOrder={0}
+/>
+
+-----------------------------------------------------------------------------------------------------
+Param        | Type       |  Default 	|    Description
+-----------------------------------------------------------------------------------------------------
+mirror		bool		false		 liệu video streamURL có được phản chiếu không
+objectFit	string		'contain'	 có thể contain hoặc cover
+streamURl	string		'streamURL'	 Bắt buộc để có một luồng video thực sự hiển thị
+zOrder		number		0		 Tương tự như zIndex
+
+
+////////////////////////MediaStream 
+: là một stream dữ liệu âm thanh và hình ảnh, bằng cách gọi hàm getUserMedia để khởi tạo khi làm việc cục bộ. MediaStream
+sẽ cho phép truy cập vào các stream của một máy tính sau khi một kết nối webRtc được thiết lập với một máy tính khác.
+
+: Một mediaStream sẽ có input và output với inout dùng để lấy dữ liệu hình ảnh và âm thanh của local trong khi output dùng
+để hiển thị các dữ liệu lên view hoặc được RTCPeerConnection sử dụng.
+
+////////////////////////RTCDataChanel
+: là một kênh hai chiều chịu trách nhiệm trao đổi dữ liệu thời gian thực. RTCDataChanel sẽ trao đổi dữ liệu dạng text, chia
+sẻ tệp P2P và các loại khác mà không chứa các dữ liệu nghe nhìn(âm thanh , hình ảnh). Khả năng trao đổi thông tin nhanh 
+chóng , an toàn.
+
+
+//// RTCPeerConnection
+: Là phần quan trọng giúp kết nối MediaStream và RTCDataChanel trở thành WebRtc.
+: RTCPeerConnection là API giúp kết nối giữa hai trình duyệt, cung cấp các phương thức để kết nối, duy trì kết nối và đóng
+kết nối khi không còn nhu cầu sử dụng.
+
+//// Giao thức STUN
+
+: Session Traversal Utilities for NAT là một giao thực mạng cho phép các máy khách tìm ra địa chỉ công khai của mình, loại
+NAT mà chúng ta đang đứng sau và cổng phía internet được NAT gắn iền với cổng nội bộ nào đó. từ đó thiết lập giao tiếp UDP
+giữa 2 host mà đều nằm sau NAT router, giao thức STUN được định nghĩa trong RFC 5389
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

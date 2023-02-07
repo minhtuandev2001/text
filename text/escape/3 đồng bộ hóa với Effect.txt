@@ -1,0 +1,91 @@
+ĐỒNG BỘ HÓA VỚI EFFECT
+
+BẠN SẼ HỌC
+
+1. Effect là gì.
+2. Effect khác với event như thế nào.
+3. Cách khai báo Effect trong component.
+4. Cách bỏ qua việc chạy lại Effect khi không cần thiết.
+5. Tại sao Effect chạy 2 lần trong quá trình phát triển và cách khắc phục chúng.
+
+/// Effect là gì, và chúng khác với sự kiện như thế nào
+
+/// Đăng ký sự kiện 
+
+Nếu Hiệu ứng của bạn đăng ký thứ gì đó, chức năng dọn dẹp sẽ hủy đăng ký:
+
+useEffect(() => {
+  function handleScroll(e) {
+    console.log(e.clientX, e.clientY);
+  }
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+/// Kích hoạt hình ảnh động
+
+: Nếu Hiệu ứng của bạn tạo hoạt ảnh cho một thứ gì đó trong đó, chức năng dọn dẹp sẽ đặt lại hoạt ảnh về các giá trị ban đầu:
+
+CODE :
+useEffect(() => {
+  const node = ref.current;
+  node.style.opacity = 1; // Trigger the animation
+  return () => {
+    node.style.opacity = 0; // Reset to the initial value
+  };
+}, []
+
+/// Đang tìm nạp dữ liệu
+
+Nếu Hiệu ứng của bạn tìm nạp thứ gì đó, chức năng dọn dẹp sẽ hủy bỏ quá trình tìm nạp hoặc bỏ qua kết quả của nó:
+
+useEffect(() => {
+  let ignore = false;
+
+  async function startFetching() {
+    const json = await fetchTodos(userId);
+    if (!ignore) {
+      setTodos(json);
+    }
+  }
+
+  startFetching();
+
+  return () => {
+    ignore = true;
+  };
+}, [userId]);
+
+--> Bạn không thể “hoàn tác” một yêu cầu mạng đã xảy ra, nhưng chức năng dọn dẹp của bạn phải đảm bảo rằng quá trình tìm nạp không 
+còn liên quan nữa sẽ không tiếp tục ảnh hưởng đến ứng dụng của bạn. Ví dụ: nếu userIdthay đổi từ 'Alice'thành 'Bob', quá trình dọn 
+dẹp đảm bảo rằng 'Alice'phản hồi bị bỏ qua ngay cả khi phản hồi đến sau 'Bob'.
+
+
+/// Not an Effect: Đang khởi tạo ứng dụng
+Một số logic chỉ nên chạy một lần khi ứng dụng khởi động. Bạn có thể đặt nó bên ngoài các thành phần của mình:
+
+if (typeof window !== 'undefined') { // Check if we're running in the browser.
+  checkAuthToken();
+  loadDataFromLocalStorage();
+}
+
+function App() {
+  // ...
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

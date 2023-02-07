@@ -1,0 +1,152 @@
+: ghi nhớ một số thông tin, nhưng không muốn thông tin đó kích hoạt render mới, sử dụng ref
+
+
+Bạn sẽ học:
+1. cách thêm một ref vào component của bạn.
+2. cách cập nhật giá trị của ref.
+3. ref khác với state như thế nào.
+4. cách sử dụng ref an toàn.
+
+
+/// Thêm một ref vào component của bạn
+
+1. nhập vào
+import {useRef} from 'react';
+
+2. gọi useRef và chuyển giá trị ban đầu mà bạn muốn ref làm đối số duy nhất.
+	vd : tham chiếu đến giá trị 0
+	const ref = useRef(0);
+3. useRef trả về một đối tượng duy nhất.
+{
+	current: 0 
+}
+
+===> khi một phần thông tin được sử dụng để render, hãy giữ nó ở state. Khi trình xử lý sự kiện chỉ cần một phần thông tin và việc thay
+đổi thông tin đó không yêu cầu render lại, sử dụng ref có thể hiệu quả hơn.
+
+/// sự khác biệt giữa ref và state
+
+			ref			||			state
+---------------------------------------------------------------------------
+useRef(initialValue)			|| useState(initialValue)
+return ({current : initialValue})	|| ([value, setValue])
+---------------------------------------------------------------------------
+không kích hoạt render khi thay đổi.|| Kích hoạt render khi thay đổi.
+---------------------------------------------------------------------------
+Có thể thay đổi-bạn có thể sửa đổi  || "không thể thay đổi"-bạn phải sử dụng
+và cập nhật current giá trị bên ngoài| chức năng setValue để sửa đổi các biến
+trình render.				|| state để xếp hàng render lại.
+---------------------------------------------------------------------------
+*Bạn không nên đọc(hoặc ghi) current || Bạn có thể đọc state bất cứ lúc nào.
+giá trị trong quá trình render.	|| tuy nhiên mỗi render có snapshot state
+						|| không thay đổi.
+---------------------------------------------------------------------------
+
+VÍ DỤ * (dùng với state)
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+  }
+
+  return (
+    <button onClick={handleClick}>
+      You clicked {count} times
+    </button>
+  );
+}
+
+--> Bởi vì count giá trị được hiển thị, nên sử dụng state. Khi giá trị của bộ đếm được đặt bằng setCount(), React sẽ render lại thành 
+phần và màn hình cập nhật để phản ánh count mới .
+
+VÍ DỤ *(SỬ DỤNG REF)
+
+import { useRef } from 'react';
+
+export default function Counter() {
+  let countRef = useRef(0);
+
+  function handleClick() {
+    // This doesn't re-render the component!
+    countRef.current = countRef.current + 1;
+  }
+
+  return (
+    <button onClick={handleClick}>
+      You clicked {countRef.current} times
+    </button>
+  );
+}
+
+--> Nếu cố thực hiện với một ref, React sẽ không bao giờ kết xuất lại thành phần đó, vì vậy bạn sẽ không bao giờ thấy count thay đổi ở 
+màn hình.
+--> Đây là lý do vì sao việc đọc ref.current trong khi kết xuất dẫn đến mã không đáng tin cậy. Nếu bạn cần điều đó, hãy sử dụng state 
+thay thế.
+
+/// khi nào nên sử dụng ref
+
+: Thông thường, bạn sẽ sử dụng ref khi thành phần của bạn cần "step outside" React và giao tiếp với API bên ngoài-- thường là API trình
+duyệt sẽ không ảnh hưởng đến giao diện của component. Dưới đây là một vài trong số những tình huống:
+	+ Lưu trữ id của "thời gian chờ"
+	+ Lưu trữ và thao tác các phần tử DOM
+	+ Lưu trữ các đối tượng không cần thiết để tính toán JSX
+--> nếu component của bạn cần lưu trữ một số giá tị, nhưng nó không ảnh hưởng đến logic hiển thị, hãy chọn refs.
+
+/// Các phương pháp hay nhất dành cho ref
+
+: Nguyên tắc này sẽ làm cho các thành phần của bạn dễ đoán hơn:
+	- hãy coi ref như một escape. ref rất hữu ích khi bạn làm việc với các hệ thống bên ngoài hoặc API trình duyệt. Nếu phần lớn 
+logic ứng dụng và luồng dữ liệu của bạn phụ thuộc vào các ref, bạn có thể muốn suy nghĩ lại cách tiếp cận của mình.
+	- không đọc hoặc ghi ref.current trong quá trinh render. Nếu cần một số thông tin trong quá trình render, hãy sử dụng state để thay
+thế. Vì react không biết khi nào ref,current thay đổi, thậm chí đọc nó trong khi render khiến hành vi của component của bạn khó dự đoán.
+(Ngoại lệ duy nhất cho điều này là mã chỉ đặt tham chiếu một lần trong lần hiển thị đầu tiên).
+
+
+== Hạn chế của state không áp dụng cho ref. Ví dụ: trạng thái hoạt động như snapshot cho mọi render và không cập nhật đồng bộ. Nhưng khi
+bạn thay đổi giá trị hiện tại của một ref, nó sẽ thay đổi ngay lập tức.
+	vd: ref.current = 5;
+	    console.log(ref.current); // 5
+--> điều này là do ref là một đối tượng Javasscript thông thường và do đó, nó hoạt động giống như một đối tượng.
+--> không cần lo lắng về việc tránh mutation khi làm việc với ref. Miễn là đối tượng của bạn đang thay đổi không được sử dụng để kết xuất,
+React không quan tâm bạn làm gì với ref hoặc nội dung của nó.
+
+/// TÓM TẮT LẠI
+
+	- ref là một escape để giữ các giá trị không được sử dụng để render. Bạn sẽ không cần chúng thường xuyên.
+	- ref là một đối tượng Javascript đơn giản với một thuộc tính duy nhất được gọi là current, bạn có thể đọc hoặc đặt thuộc tính này.
+	- Bạn có thể yêu cầu React cung cấp cho bạn một ref bằng cách gọi useRef
+	- Giống như state, ref cho phép bạn giữ lại thông tin giữa các lần render lại của một thành phần.
+	- Không giống như state, việc đặt giá trị cho current không kích hoạt render lại.
+	- Không đọc hoặc ghi ref.current trong quá trình render. Điều này làm cho component của bạn khó dự đoán.
+
+
+
+=== nên sử dụng ref cho việc lưu trữ id của setTimeout(), vì khi render, tất cả các biến cục bộ sẽ khởi tạo lại từ đầu nên không dùng biến
+cục bộ để lưu trữ id time đc
+=== biến được chia sẽ giữa các thành phần, muốn riêng thì sử dụng tham chiếu(ref) mỗi nút sẽ nhận tham chiếu riêng.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

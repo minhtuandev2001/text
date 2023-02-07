@@ -1,0 +1,116 @@
+Tái sử dụng logic với custom hook
+
+=== thêm các cuộc gọi hook vào bên trong custom hook thì mới gọi là custom hook, không thì đừng biến nó thành custom hook.
+
+
+Bạn sẽ học:
+	- Custom hook là gì và cách viết riêng của bạn.
+	- Cách sử dụng lại logic giữa các component.
+	- Cách đặt tên và cấu trúc custom hook của bạn.
+	- Khi nào và tại sao trích xuất custom hook.
+
+/// Custom hook: chia sẻ logic giữa các component
+
+CODE :
+
+import { useSyncExternalStore } from 'react';
+
+function subscribe(callback) {
+  window.addEventListener('online', callback);
+  window.addEventListener('offline', callback);
+  return () => {
+    window.removeEventListener('online', callback);
+    window.removeEventListener('offline', callback);
+  };
+}
+
+export function useOnlineStatus() {
+  return useSyncExternalStore(
+    subscribe,
+    () => navigator.onLine, // How to get the value on the client
+    () => true // How to get the value on the server
+  );
+}
+
+
+/// tên hook luôn bắt đầu bằng use
+
+1. đối với component : bắt đầu bằng chữ in hoa (vd: StatusBar, SaveButton).
+2. đối với hook : bắt đầu bằng use theo sau use[in hoa] (vd: useStatusOnline).
+
+--> chỉ có hook và component mới có quyền gọi các hook khác.
+
+
+CODE :
+
+App.js
+
+import { useFormInput } from './useFormInput.js';
+
+export default function Form() {
+  const firstNameProps = useFormInput('');
+  const lastNameProps = useFormInput('');
+
+  return (
+    <>
+      <label>
+        First name:
+        <input {...firstNameProps} />
+      </label>
+      <label>
+        Last name:
+        <input {...lastNameProps} />
+      </label>
+      <p><b>Good morning, {firstNameProps.value} {lastNameProps.value}.</b></p>
+    </>
+  );
+}
+
+useFormInput.js
+
+import { useState } from 'react';
+
+export function useFormInput(initialValue) {
+  const [value, setValue] = useState(initialValue);
+
+  function handleChange(e) {
+    setValue(e.target.value);
+  }
+
+  const inputProps = {
+    value: value,
+    onChange: handleChange
+  };
+
+  return inputProps;
+}
+
+/// khi nào nên sử dụng custom hook
+
+Bạn không cần trích xuất một Hook tùy chỉnh cho mỗi đoạn mã nhỏ trùng lặp. Một số trùng lặp là tốt. Tuy nhiên, bất cứ khi nào bạn viết một
+Effect, hãy cân nhắc xem rõ ràng hơn không nếu bọc nó trong một custom hook. Bạn không cần các Effect thường xuyên, vì vậy nếu bạn viết một
+Effect, điều đó có nghĩa là bạn cần "step outside" để đồng bộ hóa với một số hệ thống bên ngoài hoặc để làm điều gì đó mà React không có
+API tích hợp. Gói Effect của bạn vào một custom hook tùy chỉnh cho phép bạn truyền đạt chính xác ý định của mình và cách dữ liệu truyền qua
+nó.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

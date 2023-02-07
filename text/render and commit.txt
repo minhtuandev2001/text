@@ -1,0 +1,32 @@
+RENDER AND COMMIT
+
+1. Triggering a render (kích hoạt kết xuất)
+2. Rendering the component (Kết xuất thành phần)
+3. Committing to the Dom (Cam kết với Dom)
+
+/// Triggering a render
+
+-có 2 lý do để thành phần hiển thị :
+
+	+ Kết xuất ban đầu của thành phần
+	+ Trạng thái của thành phần (hoặc một trong các tổ tiên của nó) đã được cập nhật
+
+	-- Kết xuất ban đầu
+: khi ứng dụng bắt đầu, cần kích hoạt kết xuất ban đầu. thực hiện bằng cách gọi createRoot nút DOM đích, sau đó render phương
+thức của nó với thành phần của bạn.
+	-- Kết xuất khi cập nhật trạng thái
+: có thể kết xuất lại nhờ việc cập nhật trạng thái.
+
+/// Rendering the component
+
+: React gọi các thành phần của để tìm ra nội dung sẽ hiển thị trên màn hình. trong quá trình kết xuất lần 2 trở đi, React sẽ
+tính toán thuộc tính nào của chúng nếu đã thay đổi kể từ lần kết xuất trước. Nó sẽ không làm gì thông tin đó cho đến bước
+tiếp theo.
+
+/// Committing to the Dom
+
+: sau khi kết xuất các thành phần của bạn, React sẽ sửa đổi Dom
+	
+	+ Đối với kết xuất ban đầu: react sẽ sử dụng appendChild() để đặt tất cả các node Dom mà nó tạo trên màn hình.
+	+ Đối với kết xuất lại : react sẽ áp dụng thông tin ở bước 2 để cập nhật các thành phần cần thiết.
+

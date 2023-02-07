@@ -1,0 +1,125 @@
+Socket : như là cửa thông giữa các quá trình ứng dụng và giao thức truyền tải end-to-end (UDP HAY TCP)
+TCP: là dịch vụ truyền tin cậy theo bytes từ tiến trình này đến tiến trình khác.
+=> Hai loại dịch vụ truyền tải qua soket API
+	+ Datagram không dảm bảo (UDP)
+	+ Connection-ỏiented bảo dảm (TCP)
+=> So sánh giữa TCP và UDP
+				TCP						UDP
+Tồn tại kênh giao tiếp ảo giữa 2 quá trình	Không tồn tại kênh giao tiếp ảo giữa 2 quá trình
+------------------------------------------      ----------------------------------------------------------------
+Dữ liệu được gửi đi theo chế độ bảo đảm: 		Chế độ không đảm bảo:
+	- kiểm tra lỗi						- không kiểm tra lỗi
+	- truyền lại gói tin lỗi hay mất			- không phát hiện và không truyền lại gói tin mất hoặc lỗi
+	- đảm bảo thứ tự đến của gói tin			- không đảm bảo thứ tự gói tin
+------------------------------------------      -----------------------------------------------------------------
+Dữ liệu chính xác						Dữ liệu không chính xác
+Tốc độ truyền chậm					Tốc độ truyền nhanh
+-------------------------------------------     -----------------------------------------------------------------
+Thích hợp cho các ứng dụng cần độ chính xác	Thích hợp cho các ứng dụng cần tốc độ, không cần chính xác cao:
+cao: truyền file, thông tin điều khiển		truyền âm thanh, hình ảnh..
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+packet JAVA.NET làm việc với lập trình mạng
+///// LỚP InetAddress
+==> Các phương thức của lớp InetAddress:
+	- getLocalHost() : trả về địa chỉ máy cục bộ.
+	- getByName(String host): nhận địa chỉ máy kiểu chuổi, trả về đối tượng InetAddress thay mặt cho địa chỉ máy này
+	- getHostName(): trả về tên của đối tượng InetAddress theo dạng string
+	- getAddress(): trả về địa chỉ IP của đối tượng InetAddress theo dạng mảng các byte.
+	- getHostAddress() trả về địa chỉ ip của đối tượngInetAddress theo dạng string.
+///// LỚP Socket : hỗ trợ tạo liên kết giao tiếp hai chiều giữa hai chương trình chạy trên 2 máy tính trên mạng
+==> Các phương thức của lớp Socket
+	- Socket(String host, int port): tạo một kết nối theo địa chỉ host và số cổng port. 
+	- Socket(InetAddress address, int port): tạo một kết nối theo địa chỉ là đối tượng InetAdress và số cổng port.
+	- Socket(String host, int port, boolean stream): tạo một kết nối theo địa chỉ host và số cổng port, stream = true để quy
+định kết nối theo TCP, ngược lại kết nối theo UDP(user datagram protocol).
+	- getInputStream(): Lấy về luồng nhập để nhận lại dữ liệu.
+	- getOutputStream(): Lấy về luồng xuất để gửi dữ liệu.
+	- getPort() : Lấy về số hiệu cổng kết nói của máy chủ.
+	- close(): cắt đứt kết nối với máy chủ.
+///// LỚP ServerSocket
+==> Các phương thước :
+	- ServerSocket(int port): tạo một đối tượng lắng nghe những kết nối từ máy khách theo số cổng port.
+	- accept(): dừng lại chờ cho đến khi nhận được kết nối và trả về đối tượng Socket của máy khách.
+	- close(): cát đứt kết nối với máy khách.
+
+///////////////// LẬP TRÌNH SOCKET TCP(Transmission Control Protocol)
+Server
+	- server phải chạy trước.
+	- server phải tạo một socket để lắng nghe và chấp nhận kết nối từ client
+Client
+	- Khởi tạo TCP.
+	- Xác định IP address, port của server
+	- Thiết lập kết nối đến server.
+Khi server nhận yêu cầu kết nối, nó sẽ chấp nhận yêu cầu và khởi tạo socket mới để giao tiếp với client
+	- server có thể chấp nhận nhiều yêu cầu client tại một thời điểm.
+
+//////////////// LẬP TRÌNH SOCKET UDP(Universal Datagram Protocol)
+UDP không thiết lập kết nối giữa client và server.
+Bên gửi phải xác định chính xác địa chỉ IP và cổng của bên nhận.
+Server xác định địa chỉ Ip và cổng của bên gửi từ datagram nhận được.
+UDP cung cấp dịch vụ truyền dữ liệu không tin cậy theo byte ("datagrams") giữa client và Server
+
+DatagramPacket và DatagramSocket là hai class chính được sử dụng để triển khai ứng dụng client/server sử dụng giao thức UDP.
+DatagramPacket là nơi chứa dữ liệu và DatagramSocket là một cơ chế gửi và nhận các DatagramPacket
+
+///////// DATAGRAMSOCKET :
+
+DatagramSocket(): tạo một client mà được gắn với một port tùy ý.
+DatagramSocket(int port):   tạo server mà gắn với một port chỉ định để các client biết để kết nối tới.
+DatagramSocket(int port , InetAddress ipp): gắn một server tới một địa chỉ IP cụ thể (trường hợp máy có nhiều địa chỉ ip)
+==> Các phương thức trong DatagramSocket:
+	- send(DatagramPacket p): gửi một gói datagram.
+	- receive(DatagramPacket p): nhận một gói datagram.
+	- setSoTimeout(int timeout) : thiết lập thời gian timeout theo đơn vị mili giây, giới hạn thời gian khi nhận dữ liệu. Nếu 
+hết thời gian chờ một ngoại lệ SocketTimeoutException sẽ được phát sinh.
+	- close(): đóng socket.
+
+////////// DATAGRAMPACKET :
+---- hai construcor tạo ra từ đối tượng DatagramSocket mới để Nhận dữ liệu từ mạng.
+	+ public DatagramPacket(byte[] b , int length)
+	+ public DatagramPacket(byte[] , int offset, int length)
+==> khi một socket nhận một datagram, nó lưu trữ phần dữ liệu datagram ở trong cùng đệm b bắt đầu tại vị trí b[0] và tiếp tục cho
+tới khi gói tin được lưu trữ hoàn toàn hoặc cho tới khi lưu trữ hết length byte. Nếu sử dụng constructor thứ hai, thì dữ liệu được
+lưu trữ bắt đầu từ vị trí b[offset]. Chiều dài của b phải nhỏ hơn hoặc bằng b.length-offset. 
+
+	ví dụ : xây dựng một DatagramPacket để nhận dữ liệu có kích thước 8912 byte.
+	byte b[] = new byte[8912];
+	DatagramPacket dp = new DatagramPacket(b,b.length);
+
+---- Bốn constructor tạo các đối tượng DatagramPacket mới để gửi dữ liệu trên mạng:
+	+ public DatagramPacket(byte[] b, int length, InetAddress, int port)
+	+ public DatagramPacket(byte[] b, int offset, int length, InetAdress dc, int port)
+	+ public DatagramPacket(byte[] b, int length, SocketAddress dc, int port)
+	+ public DatagramPacket(byte[] b, int offset, int length, SocketAddresse, int port)
+==> gói tin được điền đầy dữ liệu với chiều dài length byte bắt đầu từ vị trí 0 nếu offset không được sử dụng.
+
+---- Các phương thức lấy thông tin trên một DatagramPacket nhận được:
+
+Khi nhận được một DatagramPacket từ một quá trình khác gởi đến, ta có thể lấy thông tin trên DatagramPacket này bằng các phương thức sau:
+
+	public synchronized() InternetAddress getAddress() : Địa chỉ máy gởi.
+	public synchronized() int getPort() : Cổng của quá trình gởi.
+	public synchronized() byte[] getData() : Dữ liệu từ gói tin.
+	public synchronized() int getLength() : Chiều dài của dữ liệu trong gói tin.
+
+---- Các phương thức đặt thông tin cho gói tin gởi:
+
+Trước khi gởi một DatagramPacket đi, ta có thể đặt thông tin trên DatagramPacket này bằng các phương thức sau:
+
+public synchronized() void setAddress(IntermetAddress address) : Đặt địa chỉ máy nhận.
+public synchronized() void setPort(int port) : Đặt cổng quá trình nhận.
+public synchronized() void setData(byte buffer[]) : Đặt dữ liệu gởi.
+public synchronized() void setLength(int len) : Đặt chiều dài dữ liệu gởi.
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,10 @@
+Thư viện này giúp chúng ta tạo ra Api giả (truy cập json-server để đọc docs)
+
+b1. Tạo thư mục 
+b2. cài node
+b3. npm init (tạo package.json)
+b4. npm instal json-server
+b5. tạo file có đuôi .json (trong này chứa dữ liệu)
+b6.1. cấu hình lại package.json 
+b6.2. thêm lệnh start trong mục script ( json-server --watch [ten file.json] )
+b7. npm start để khởi chạy 

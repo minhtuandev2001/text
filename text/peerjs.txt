@@ -1,0 +1,275 @@
+///////////////////////////////////////////////////////////////PEERJS///////////////////////////////////////////////////////////////
+: Đơn giản hóa các cuộc gọi video và âm thanh theo peer to peer
+1. SETUP 
+
+<script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script>
+
+2. CREATE THE PEER OBJECT
+
+var peer = new Peer([id], [options]);
+
+	trong đó - id(string) : sử dụng id được cung cấp để kết nối giữa các đồng nghiệp(bắt đầu và kết thức bằng ký tự chữ và số).
+		  - option(object) : + key(string) : API cho cloud PeerServer. cloud PeerSever chạy trên cổng 443, hãy đảm bảo không bị chặn hoặc chạy
+peerServer của riêng bạn.
+
+		                     + host(string) : máy chủ lưu trữ. Mặc định là o.peerjs.com. Cũng chấp nhận '/' để biểu thị tên máy chủ tương đối.
+			              + port(number) : cổng máy chủ, mặc định là 443.
+				       + pingInterval(number) : khoảng ping tính bằng ms. mặc định là 5000
+					+ path(string) : Đường dẫn mà PeerServer tự lưu trữ của bạn đang chạy. Mặc định là '/'.
+				       + secure(boolean) : true nếu bạn đang sử dụng SSL.
+ 					+ config(object) : băm cấu hình được chuyển đến RTCPeerConnection. Hàm này chứa bất kỳ cấu hình máy chủ ICE/ TURN tùy 
+chỉnh nào. các giá trị mặc định là { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' }
+				       + debug(number) In thông báo nhật ký tùy thuộc vào mức gỡ lỗi được chuyển vào . mặc định là 0
+						- 0 : In không có nhật ký.
+						- 1 : Chỉ in lỗi
+						- 2 : In lỗi và cảnh báo.
+						- 3 : In tất cả nhật ký.
+////////////////
+PEER.CONNECT(METHOD)
+
+const dataConnection = peer.connect(id, [options]);
+
+: connect với các remote được chỉ định bởi id và trả về data connection. Đảm bảo lắng nghe sự kiện lỗi trong trường hợp kết nối không thành công.
+	
+	trong đó : - id(string) : id môi giới của remote peer (peer.id của họ).
+		    - option(object) : + label(string) : một label duy nhất mà bạn muốn xác định kết nối data. Nếu không được chỉ định, một nhãn sẽ được
+tạo ngẫu nhiên. có thể được truy cập bằng dataConnection.label
+		    	                + metadata : Siêu dữ liệu được liên kết với connnection, được chuyển vào bởi bất kỳ ai bắt đầu két nối. truy cập 
+bằng dataConnection.metadata
+				         + serialization(string) : có thể là binary(default), binary-utf8, json hoặc không. có thể được truy cập bằng 
+dataConnection.serialization
+			                + reliable(boolean) : các kênh dữ liệu cơ bản có đáng tin cậy hay không. Mặc định giá trị là false.
+
+//////////////
+PEER.CALL(METHOD)
+
+const mediaConnection = peer.call(id, stream, [options]);
+
+: gọi remote peer được chỉ định bởi id và trả về một media connection. Đảm bảo lắng nghe sự kiện lỗi trong trường hợp kết nối không thành công.
+	
+	trong đó : + id(string) : id của remote peer.
+		    + stream(mediaStream) : luồng phương tiện của người gọi.
+		    + options(object) : + metadata : siêu dữ liệu được liên kết với connnection, được chuyển vào bởi bất kỳ ai bắt đầu kết nối. truy cập
+mediaConnection.metadata
+			                 + sdpTransform(method) : function chạy trước khi tạo offer để sửa đổi thông báo phiếu mua hàng sdp.
+
+//////////////
+PEER.ON(METHOD)
+
+peer.on(event, callback);
+
+: Đặt trình nghe cho các sự kiện peer
+	
+	trong đó : + 'open' : peer.on('open', function(id){....}) : được phát ra khi kết nối với PeerServer được thiết lập. Bạn có thể sử dụng peer
+trước khi điều này được phát ra , nhưng thư đến máy chủ sẽ được xếp hàng đợi. id là id môi giới của peer( được ccung cấp trong phương thức khởi tạo
+hoặc được chỉ định bởi máy chủ).
+
+		    + 'connection' : peer.on('connection', function(dataConnection){....}) : được phát ra khi một kết nối data mới được thiết lập từ
+một remote peer.
+
+		    + 'call' : peer.on('call', function(mediaConnection){....}) : được phát ra khi một remote peer cố gắng gọi cho bạn. MediaConnection
+được phát ra chưa được hoạt động, trước tiên bạn phải trả lời cuộc gọi (mediaConnection.answer([stream]);). Sau đó bạn có thể nghe sự kiện phát trực
+tiếp.
+		    + 'close' : peer.on('close', function(){....}) : được phát ra khi mạng ngang hàng bị phá hủy và không còn có thể chấp nhận hoặc tạo
+bất kỳ kết nối mới nào. Lúc này các kết nối peer sẽ bị đóng . Nên gọi peer.destroy() để dọn dẹp chính xác khi không cần thiết nữa.
+
+		    + 'disconnected' : peer.on('disconnected', function(){.....}) : phát ra khi máy peer bị ngắt kết nối khỏi máy chủ báo hiệu, theo 
+cách thủ công hoặc do kết nối với máy chủ báo hiệu bị mất. Khi một máy peer bị ngắt kết nối, các kết nối hiện có của nó sẽ vẫn tồn tại, nhưng máy
+ngang hàng không thể chấp nhận hoặc tạo bất kỳ kết nối mới nào. Bạn có thể kết nối lại với máy chủ bằng cách gọi peer.reconnect().
+
+		    + 'error' : peer.on('error')	: các lỗi của peer hầu như luôn luôn destroy và sẽ phá hủy peer.
+
+//////////////
+PEER.DISCONNECT(METHOD)
+
+peer.disconnect() 
+
+: đóng kết nối với máy chủ, giữ nguyên tất cả các connection data và media connection hiện có. peer.disconnected sẽ được đặt thành 
+true và sự kiện disconnected sẽ kích hoạt. Điều này không được hoàn tác , đối tượng peer tương ứng sẽ không thể tạo hoặc nhận bất kỳ kết nối nào nữa 
+và ID của nó sẽ bị mất trên cloud server.
+
+/////////////
+PEER.RECONNECT(METHOD)
+
+peer.reconnect();
+
+: Cố gắng kết nối lại với máy chủ bằng ID cũ của ứng dụng peer. Chỉ các peer bị ngắt kết nối mới có thể kết nối lại. các peer bị destroy không thể
+được kết nối lại. Nếu kết nối không thành công (ví dụ: nếu ID cũ của ứng dụng peer hiện đã được sử dụng), các kết nối hiện có của ứng dụng peer sẽ 
+không đóng, nhưng mọi sự kiện lỗi liên quan sẽ kích hoạt.
+
+////////////
+PEER.DESTROY(METHOD)
+
+peer.destroy();
+
+: Đóng kết nối với máy chủ và chấm dứt tất cả các kết nối hiện có. peer.destroyed sẽ được đặt thanh true. (điều này không thể được hoàn tác, đối 
+tượng peer tương ứng sẽ không thể tạo hoặc nhận bất kỳ kết nối nào nữa, ID của nó sẽ bị trên cloud server) và tất cả các connect data và media 
+connection sẽ bị đóng.
+
+
+--> peerJs sử dụng PeerSever cho session metadata and candidate signaling. Bạn cũng có thể chạy PeerServer của riêng mình nếu bạn không thích đám mây
+
+///////////
+PEER.ID (STRING)
+
+: id môi giới của peer này, Nếu không có ID nào được chỉ định trong constructor(hàm tạo), điều này sẽ không được xác định cho đến khi sự kiện open 
+được phát ra.
+
+////////// 
+PEER.CONNECTIONS (OBJECT)
+
+: Một hàm băm của tất cả các kết nối được liên kết với peer này , được khóa bởi id của remote peer , Nên tự theo dõi kết nỗi thay vì sử dụng hàm băm 
+này
+
+//////////
+PEER.DISCONNECTED (BOOLEAN)
+
+: false nếu có kết nối hoạt động với PeerServer.
+
+/////////
+PEER.DESTROYED(BOOLEAN)
+
+: true nếu peer này và tất cả các kết nối của nó không còn được sử dụng nữa. 
+
+
+////////////
+DataConnection (class)
+
+: Kết thúc DataChannel của WebRTC. hẫy sử dụng peer.connect hoặc lắng nghe sự kiện connect
+
+.send(METHOD) : dataConnection.send(data)
+	- dữ liệu được tuần tự hóa bởi BinaryPack theo mặc định và được gửi đến remote peer.
+	- data : bạn có thể gửi bất kỳ loại dữ liệu nào, bao gồm các object, string..
+
+.close(METHOD) : dataconnection.close()
+	-  đóng kết nối dữ liệu, dọn dẹp các kênh dữ liệu và Kết nối peer bên dưới.
+
+.on(METHOD) : dataConnection.on(event, callback);
+
+: đặt người nghe cho sự kiện kết nối dữ liệu.
+
+	- 'data'(event) : dataConnection.on('data', function(data){.....}): được phát ra khi nhận dữ liệu từ remote peer
+	- 'open'(event) : dataConnection.on('open', function(){....}) : được phát ra khi kết nối được thiết lập và sẵn sàng sử dụng.
+	- 'close'(event) : dataConnection.on('close', function(){......}): được phát ra khi bạn hoặc remote peer đóng kêt nối dữ liệu.
+	- 'error'(event) : dataConnection.on('error', function(err){.....}):
+
+// .dataChanel (Object)
+
+: Tham chiếu đến đối tượng RTCDataChannel được liên kết với kết nối.
+
+//.label(STRING)
+
+: Nhãn tùy chọn được PeerJS chuyển vào hoặc gán khi kết nối được bắt đầu.
+
+//.metadata
+
+: Bất kỳ loại siêu dữ liệu nào được liên kết với kết nối, được chuyển vào bởi bất kỳ ai bắt đầu kết nối.
+
+//.open(BOOLEAN)
+
+: Điều này đúng nếu kết nối đang mở và sẵn sàng để đọc/ghi.
+
+//.peerConnection(Object)
+
+: Tham chiếu đến đối tượng RTCPeerConnection được liên kết với kết nối.
+
+//.peer(STRING)
+
+: ID của peer ở đầu kia của kết nối này.
+
+//.reliable(BOOLEAN)
+
+: Các kênh dữ liệu cơ bản có đáng tin cậy hay không, được xác định khi kết nối được bắt đầu.
+
+//.serialization(STRING) 
+
+: Định dạng tuần tự hóa của dữ liệu được gửi qua kết nối. Có thể là binary(mặc định), binary-utf8, json hoặc không.
+
+//.type(STRING)
+
+: đối với các kết nối dữ liệu, đây luon là 'data'
+
+//.bufferSize (NUMBER)
+
+: Số lượng tin nhắn được xếp hàng đợi để gửi sau khi bộ đệm của trình duyệt không còn đầy.
+
+//////////////
+MediaConnection (CLASS)
+
+: Kết hợp các luồng phương tiện của WebRTC. Để có được một cuộc gọi, sử dụng peer.call  hoặc lắng nghe sự kiện cuộc gọi.
+
+.answer(METHOD)  : mediaConnection.answer([stream], [options]);
+
+	- khi nhận một sự kiện cuộc gọi trên một peer, bạn có thể gọi .answer trên media connection được cung cấp bởi cuộc gọi lại để chấp nhận cuộc
+gọi và tùy chọn gửi luồng media stream của riêng bạn
+	- trong đó : stream(Object) : luồng media stream WebRTC từ getUserMedia.
+		    : option(Object) : sdpTransform(METHOD) : hàm chạy trước khi tạo answer để sửa đổi message sdp.
+
+.close(METHOD) : mediaConnection.close();
+
+	- đóng kết nối phương tiện.
+
+.on(METHOD) : mediaConnection.on(event, callback);
+
+: đặt người nghe cho media connection.
+
+	- 'stream' (EVENT) : mediaConnection.on('stream', function(stream){..........}) : gọi khi remote peer add a stream.
+	- 'close'(EVENT) : mediaConnection.on('close', function(){.......}),được phát ra khi bạn hoặc remote peer đóng connnection media . KHÔNG support fireFox
+	- 'error'(EVENT) : mediaConnection.on('error', function(err){......})
+
+//.open(BOOLEAN)
+
+: media connection có đang hoạt động hay không(ví dụ : cuộc gọi của bạn đã được trả lời). bạn có thể check mục này nếu bạn muốn đặt thời gian chờ 
+tối đa cho cuộc gọi một chiều.
+
+//.metadata 
+
+: bất kì loại siêu dữ liệu nào được liên kết với kết nối, được chuyển vào bởi bất kỳ ai đang kết nối.
+
+//.peer (STRING)
+
+: ID của peer ở đầu kia của kết nối này.
+
+//.type(STRING)
+
+: Đối với media connection luôn là 'media'.
+
+
+/////////////////////////////////////// Tìm hiểu về NAT , STUN, TURN với ICE
+NAT : (Network Address Translation)
+
+STUN : (simple traversal OF UDP Through NAT) : khi một máy chủ nào cài NAT thì STUN server sẽ giúp cho client đó biết được địa chỉ IP và Port mà thiết
+bị NAT sử dụng. và từ đó giúp cho các peer có thể lấy được địa chỉ của peer khác (IP nào, cổng mấy, NAT loại gì).
+
+TURN : (Traversal Using Nat Relay) : hỗ trợ cả giao thức TCP làm giao thức truyền tải. TURN bổ sung cho STUN là hỗ trợ Symmetric NAT. Dữ liệu thay vi
+gửi trực tiếp tới các peer thì cá peer sẽ gửi dữ liệu tới các TURN server và TURN server sẽ đóng vai trò trung gian vận chuyển gói tin.
+
+ICE (Interactive Communication Establishment) : một giao thức được dùng để thiết lâo phiên media dụa trên UDP đi qua NAT một cách nhanh nhất. ICE sẽ 
+tìm đường tốt nhất để kết nối giữa các peer, nó thử tất cả các khả năng có thể kết nối một cách song song và lựa chọ con đường hiệu quả nhất
+
+Signaling : 
+	1. Session control message : khởi tạo và chấm dứt một kết nối
+	2. Network configuration: dùng để hỏi xem địa chỉ public IP của mình là gì.
+	3. Media capabilities: các loại codes và resolutions cần thiết
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

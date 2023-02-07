@@ -1,0 +1,177 @@
+Escape hatches
+
+TRONG CHƯƠNG NÀY: 
+
+1. Cách "remember" thông tin mà không cần re-render. (How to “remember” information without re-rendering)
+2. Cách truy cập các phần tử DOM do React quản lý. (How to access DOM elements managed by React)
+3. Cách đồng bộ hóa các thành phần với hệ thống bên ngoài. (How to synchronize components with external systems)
+4. Cách xóa các Effect không cần thiết khỏi các thành phần của bạn. (How to remove unnecessary Effects from your components)
+5. Vòng đời của Effect khác với vòng đời của một component như thế nào. (How an Effect’s lifecycle is different from a component’s)
+6. Cách ngăn một số giá trị kích hoạt lại Effect (How to prevent some values from re-triggering Effects)
+7. Cách làm cho Effect của bạn chạy lại ít thướng xuyên hơn. (How to make your Effect re-run less often)
+8. Cách chia sẻ Logic giữa các component. (How to share logic between components)
+
+
+/// Tham chiếu giá trị với refs (referencing value with refs)
+
+: ghi nhớ thông tin nhưng không muốn thông tin đó kích hoạt lại kết xuất mới
+	
+	vd: const ref = useRef(0);
+
+/// Thao tác Dom với ref
+
+: React tự động cập nhật Dom đề phù hợp với đầu ra render của bạn, vì vậy các component của bạn sẽ không cần thao tác với nó thường
+xuyên. Tuy nhiên, đôi khii bạn có thể cần quyền truy cập vào các phần tử Dom do react quản lý
+	: ví dụ: để focus vào node, cuộn tới node, hoặc đo kích thước và vị trí node đó. Không có cách tích hợp nào dể thực hiện những 
+điểu đó trong React, vì vậy bạn sẽ cần tham chiếu đến node Dom.
+	: ví dụ : nhấp vào node sẽ focus đầu vào bằng cách dùng ref
+
+CODE :
+import { useRef } from 'react';
+
+export default function Form() {
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>
+        Focus the input
+      </button>
+    </>
+  );
+}
+
+/// Đồng bộ hóa với Effect (synchronizing with Effects)
+
+: Một số component cần phải đồng bộ hóa với các hệ thống bên ngoài. 
+	: ví dụ: bạn có thể muốn kiểm soát một thành phần không phải React, dựa trên state react,
+: Effect cho phép bạn chạy một số mã sau khi kết xuất. Sử dụng chúng để đồng bộ hóa thành phần của bạn với một số hệ thống bên ngoài
+
+VÍ DỤ: Nhấn Play/Pause nhiều lần và xem cách trình phát video được đồng bộ hóa với props value isPlaying.
+import { useState, useRef, useEffect } from 'react';
+
+function VideoPlayer({ src, isPlaying }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      ref.current.play();
+    } else {
+      ref.current.pause();
+    }
+  }, [isPlaying]);
+
+  return <video ref={ref} src={src} loop  />;
+}
+
+export default function App() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  return (
+    <>
+      <button onClick={() => setIsPlaying(!isPlaying)}>
+        {isPlaying ? 'Pause' : 'Play'}
+      </button>
+      <VideoPlayer
+        isPlaying={isPlaying}
+        src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+      />
+    </>
+  );
+}
+--> Nhiều Effect cũng cần phải "clean up". ví dụ (Effect của bạn thiết lập kết nối với máy chủ, thì sau đó phải dọn dẹp nó bằng cách 
+ngắt kết nối thành phần của bạn khỏi máy)
+
+import { useState, useEffect } from 'react';
+import { createConnection } from './chat.js';
+
+export default function ChatRoom() {
+  useEffect(() => {
+    const connection = createConnection();
+    connection.connect();
+    return () => connection.disconnect();
+  }, []);
+  return <h1>Welcome to the chat!</h1>;
+}
+
+--> trong quá trình phát triển(DEV), React sẽ ngay lập tức chạy và clean up Effect của bạn thêm một lần nữa. Đây là lý do tại sao in 
+ra 2 lần.
+
+/// Bạn có thể không cần Effect
+
+: Các Effect là một lối thoát khỏi mô hình React. chúng cho phép bạn "step uotside" React và đồng bộ hóa các thành phần của bạn với một
+số hệ thống bên ngoài. Nếu không có hệ thống bên ngoài tham gia (ví dụ: nếu bạn muốn cập nhật trạng thái của một thành phần khi một số
+đạo cụ hoặc trạng thái thay đổi ), thì bạn không cần có Effect. 
+
+CÓ 2 TRƯỜNG HỢP PHỔ BIẾN MÀ BẠN KHÔNG CẦN HIỆU ỨNG:
+
+	- Bạn không cần Effect để chuyển đổi dữ liệu để hiển thị.
+	- Bạn không cần hiệu ứng để xử lý các sự kiện người dùng.
+
+VÍ DỤ : bạn không cần Hiệu ứng để điều chỉnh một số trạng thái dựa trên trạng thái khác: 
+
+function Form() {
+  const [firstName, setFirstName] = useState('Taylor');
+  const [lastName, setLastName] = useState('Swift');
+
+  // 🔴 Avoid: redundant state and unnecessary Effect
+  const [fullName, setFullName] = useState('');
+  useEffect(() => {
+    setFullName(firstName + ' ' + lastName);
+  }, [firstName, lastName]);
+  // ...
+}
+
+THAY VÀO ĐÓ, HÃY TÍNH TOÁN NHIỀU NHẤT CÓ THỂ TRONG KHI RENDER
+
+function Form() {
+  const [firstName, setFirstName] = useState('Taylor');
+  const [lastName, setLastName] = useState('Swift');
+  // ✅ Good: calculated during rendering
+  const fullName = firstName + ' ' + lastName;
+  // ...
+}
+
+
+==> TUY NHIÊN BẠN CẦN EFFECT ĐỂ ĐỒNG BỘ HÓA VỚI CÁC HỆ THỐNG BÊN NGOÀI
+
+
+/// VÒNG ĐỜI CỦA CÁC REACTIVE EFFECT 
+
+: Các Effect có vòng đời khác với các thành phần. Các thành phần có thể mount, update, unmount. Một Effect chỉ có thể thực hiện 2 viêv :
+bắt đầu đồng bộ hóa nội dung nào đó và sau đó dừng đồng bộ hóa nội dung đó. Chu kỳ này có thể xảy ra nhiều lần nếu Effect của bạn phụ thuộc
+vào props và state thay đổi theo thời gian.
+
+/// Tách các sự kiện khỏi Effect (vẫn đang nghiên cứu chưa đưa vào đâu)
+//. Loại bỏ các phụ thuộc Effect
+đối số thứ 2 của Effect
+// Tái sử dụng logic với Hôk tùy chỉnh
+: Tạo các Hook tùy chỉnh, kết hợp chúng lại với nhau, truyền dữ liệu giữa chúng và sử dụng lại chúng giữa các component.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

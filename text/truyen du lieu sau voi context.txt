@@ -1,0 +1,98 @@
+Passing Data Deeply with Context
+
+Vấn đề : - Truyền thông tin từ component cha sang component con thông qua props. Nhưng việc chuyển các đạo cụ có thể trở nên dài
+dòng và bất tiện nếu bạn phải truyền chúng qua nhiều thành phần ở giữa hoặc nếu nhiều thành phần trong ứng dụng của bạn cần 
+cùng một thông tin.
+
+	   - Context cho phép các thành phần cha mẹ cung cấp một số thông tin cho bất kỳ thành phần nào trong cây bên dưới nó-
+bất kể sâu đến đâu(no matter how deep)- mà không chuyển thông tin đó một cách rõ ràng thông qua props
+
+//////////////////// Bạn sẽ học được gì ?
+
+1. props drilling là gì.
+2. thay thế props(truyền qua nhiều) bằng context.
+3. các trường hợp sử dụng phổ biến cho context.
+4. các lựa chọn thay thế phổ biến cho context.
+
+// Vấn đề với việc chuyển đạo cụ
+: tổ tiên chúng có thể bị loại bỏ xa khỏi các thành phần cần dữ liệu và việc nâng trạng thái lên(lifting state up) cao như vậy
+có thể dẫn đến tính huống là "prop drilling"
+
+1. TẠO CONTEXT
+: Bạn cần createContext . xuất nó từ tệp để các thành phần của bạn có thể sử dụng nó
+	
+	import { createContext } from 'react'
+	export const NameContext = createContext(defaultValue);
+2. SỬ DỤNG CONTEXT
+: Import useContext và Context của bạn
+	import {useContext} from 'react'
+	import {NameContext} from './NameContext.js'
+
+	Sử dụng : const name = useContext(NameContext); đọc tệp NameContext
+
+3. CUNG CẤP CONTEXT
+: Thành phần cha nơi có thành phần children cần value
+	import {NameContext} from './nameContext'
+: gói chung với context provider để cung cấp NameContext
+	<section>
+		<NameContext.Provider value={propsValue}>
+			{children}
+		</NameContext.Provider>
+	</section>
+==> điều này nói : nếu bất kỳ thành phần nào bên trong <Section> yêu cầu nameContext, hãy cung cấp propsValue. Thành phần này
+sẽ sử dụng giá trị gần nhất <NameContext.Provider> trong cây giao diện người dùng phía trên nó.
+
+<Section level={number}>
+	<Heading></Heading>
+</Section>
+
+1. Bạn chuyển một props name cho <Section>.
+2. Section bọc con nó vào <NameContext.Provider value={name}>.
+3. Heading hỏi giá trị gần nhất của NameContext trên với useContext(NameContext)
+
+///// Sử dụng và cung cấp bối cảnh từ cùng một thành phần
+
+--> Hiện tại thì bạn vẫn phải chỉ định level thủ công từng phần
+export default function Page() {
+  return (
+    <Section level={1}>
+      ...
+      <Section level={2}>
+        ...
+        <Section level={3}>
+      
+--> Vì ngữ cảnh cho phép bạn đọc các thông tin từ một thành phần bên trên, nên mỗi thành phần Section có thể đọc thông tin 
+level từ Section bên trên và level + 1 tự động chuyển xuống. 
+
+import { useContext } from 'react';
+import { LevelContext } from './LevelContext.js';
+
+export default function Section({ children }) {
+  const level = useContext(LevelContext);
+  return (
+    <section className="section">
+      <LevelContext.Provider value={level + 1}>
+        {children}
+      </LevelContext.Provider>
+    </section>
+  );
+}
+==> không cần phải chuyển value thông qua props (Section) giống lúc trước nữa
+
+
+Còn phải xem lại nữa
+/// https://beta.reactjs.org/learn/passing-data-deeply-with-context
+
+
+
+
+
+
+
+
+
+
+
+
+
+

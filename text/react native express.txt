@@ -1,0 +1,4 @@
+- cài đặt node
+- npm i --global expo-cli
+- expo init [ten du an] (khởi tạo dự án)
+- npm start (chay dự án)

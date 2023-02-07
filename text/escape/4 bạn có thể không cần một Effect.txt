@@ -1,0 +1,23 @@
+Khi bạn không chắc liệu một số mã nên ở trong Hiệu ứng hay trong trình xử lý sự kiện, hãy tự hỏi tại sao mã này cần chạy. Chỉ sử dụng 
+Effect cho mã sẽ chạy vì thành phần được hiển thị cho người dùng. Trong ví dụ này, thông báo sẽ xuất hiện vì người dùng đã nhấn nút chứ 
+không phải vì trang được hiển thị! Xóa Effect và đưa logic được chia sẻ vào một chức năng mà bạn gọi từ cả hai trình xử lý sự kiện:
+
+function ProductPage({ product, addToCart }) {
+  // ✅ Good: Event-specific logic is called from event handlers
+  function buyProduct() {
+    addToCart(product);
+    showNotification(`Added ${product.name} to the shopping cart!`);
+  }
+
+  function handleBuyClick() {
+    buyProduct();
+  }
+
+  function handleCheckoutClick() {
+    buyProduct();
+    navigateTo('/checkout');
+  }
+  // ...
+}
+
+

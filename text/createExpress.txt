@@ -1,0 +1,714 @@
+MVC
+	- controler: là tập hợp các hàm xử lý các request từ router (đối số thứ hai trong router).
+	- router : tập hợp các đường dẫn , param trong request của người dùng.
+API 
+	- cứ gọi là công cụ để lấy ra dữ liệu.
+
+Express : + Một ứng dụng Express về cơ bản là một loạt các lệnh gọi middleware
+	    + Xác định một tập hợp các middleware và đính kèm dưới dạng stack(ngăn xếp) vào một hoặc nhiều route handler function.
+	    + Gọi middleware tiếp theo bằng function next()
+
+	bai 1: Băt đầu
+	1. cài express-generator ( npm install -g express-generator)
+	2. tạo một ứng dụng Express
+==> Option :
+$ express -h
+
+  Usage: express [options] [dir]
+
+  Options:
+
+    -h, --help          output usage information
+        --version       output the version number
+    -e, --ejs           add ejs engine support
+        --hbs           add handlebars engine support
+        --pug           add pug engine support
+    -H, --hogan         add hogan.js engine support
+        --no-view       generate without view engine
+    -v, --view <engine> add view <engine> support (ejs|hbs|hjs|jade|pug|twig|vash) (defaults to jade)
+    -c, --css <engine>  add stylesheet <engine> support (less|stylus|compass|sass) (defaults to plain css)
+        --git           add .gitignore
+    -f, --force         force on non-empty directory
+==> Tạo ứng dụng myapp với view engine là pug
+	$ express --view=pug myapp
+
+	bai 2: basic routing
+		app.METHOD(PATH, HANDLER)
+			+ path : có thể là string , string pattern(?,+,*,()) hoặc biểu thức chính quy
+		ví dụ : 
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+////////////////////////////////////////////// ROUTING ////////////////////////////////////////////////////////
+
+ROUTER PATH :
+		1. code 
+const express = require('express');
+
+const app = express();
+const port = 3000 ;
+
+// router
+// app.METHOD(path, handler)
+app.get('/', (req, res) => { // only get
+    res.send("su dung method get");
+})
+app.post('/', (req, res) => { // only post
+    res.send("su dung method post");
+})
+
+app.all('/about', (req, res,next) => {
+    res.send("tat ca cac method deu truy cap duoc");
+    next();
+})
+app.listen(port, ()=> {
+    console.log('listening on port ' + port);
+});
+
+		2. code ví dụ từng loại đường dẫn
+==> path string
+p.get('/', (req, res) => {
+    res.send('root');
+});
+
+app.get('/about', (req, res) => {
+    res.send('about');
+});
+
+app.get('/random.text', (req, res) => {
+    res.send('random.text');
+})
+==> string pattern
+app.get('/ef?gh', (req, res) => {
+    res.send('string pattern "ef?gh", khớp với egh , efgh ');
+})
+
+app.get('/ab+cd',(req, res)=>{
+    res.send('string pattern "ab+cd", khớp với abcd, abbcd, abbbcd, ab(rất nhiều chữ b ở đây )cd ')
+})
+
+app.get('/ef*ghi', (req, res) => {
+    res.send('string pattern "ef*ghi", khớp với efghi , ef(gì cũng được)ghi ');
+})
+
+app.get('/ab(cd)?e', (req, res) => {
+    res.send('string pattern "ab(cd)?e" , khớp với abe, abcde ')
+})
+
+==> path regular
+app.get(/a/, (req, res) => {
+    res.send('/a/ , khớp với mọi đường dẫn có chữ a');
+    // ví dụ : aihnafiauwef
+})
+
+app.get(/.*fly$/, (req, res) => {
+    res.send('khớp với dragonfly, butterfly, không khớp với dragonflyman , butterflyman')
+})
+
+ROUTER PARAMETERS
+
+: là các phân đoạn URL được đặt tên, được sử đụng để nắm bắt các giá trị được chỉ định tại vị trí của chúng
+: tên của tham số tuyến đường phải được tạo thành từ ([A-Za-z0-9_])
+: dấu (-), (.) dùng để nối thêm tham số
+: biểu thức chính quy cũng là một phần của chuỗi kí tự , muốn thoát thì phải sử dụng \ : ví dụ (\\d)
+: trong phiên bản express4 regular (*) không diễn giải theo cách thông thường , sử dụng {0,} để thay 
+Route path: /users/:userId/books/:bookId
+ví dụ : Request URL: http://localhost:3000/users/34/books/8989
+req.params: { "userId": "34", "bookId": "8989" }
+		1. code 
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+//routing 
+// Router parameters
+// tên của tham số phải được tạo thành từ ([A-Za-z0-9_])
+app.get('/users/:userId/books/:bookId', (req, res) => {
+    res.send(req.params)
+})
+// dấu (-), (.) dùng để nối nhiều tham số với nhau
+/*ví dụ
+plantae : cây thuộc họ thực vật
+genus : chi
+species : loài
+*/
+app.get('/plantae/:genus.:species', (req, res) => {
+    res.send(req.params);
+    /*đường dãn ví dụ : plantae/cogai.hoahong
+    result :{
+                "genus": "cogai",
+                "species": "hoahong"
+            }*/
+})
+
+app.get('/flights/:from-:to', (req, res) => {
+    res.send(req.params);
+    /*
+    đường dẫn ví dụ : flights/saigon-HCM
+    result: {
+                "from": "saigon",
+                "to": "HCM"
+            }
+    */
+})
+
+// kiểm soát tham số một cách chính xác hơn , sử dụng regular expression 
+app.get('/user/:userId(\\d+)', (req, res) => {
+    res.send(req.params);
+    /* số bất kì , xuất hiện nhiều lần cx được*/
+    /* bởi vì biểu thức chính thường là một phần của chuỗi ký tự , thoát khỏi bằng cách thêm \
+    đường dẫn ví dụ : user/:userID(\\d+)
+    */
+})
+app.listen(port, () => {
+    console.log('listening on port ' + port);
+})
+
+ROUTER HANDLER ( xử lý yêu cầu)
+:next : đối số gọi làm hàm middleware
+	: gọi middleware tiếp theo cho stack(ngăn xếp)
+		1. code 
+
+// xử lý yêu cầu (router handler)
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// nhiều hàm gọi lại có thể xử lý một tuyến đường , đảm bảo bạn chỉ định next 
+app.get('/', (req, res, next) => {
+    console.log('phản hòi sẽ được gọi trong next() ')
+    next(); // dùng để gọi middleware tiếp theo
+}, (req, res) => {
+    res.send('hello chao cac ban');
+})
+
+// một mảng các hàm gọi lại để xử lý 1 tuyến đường  
+const cb0 = (req, res, next) => {
+    console.log('cb0');
+    console.log(req.url)
+    next();
+}
+const cb1 = (req, res, next) => {
+    console.log('cb1');
+    next();
+}
+const cb2 = (req, res) => {
+    res.send('hello chao cb2');
+    console.log(req.url)
+}
+app.get('/example', [cb0, cb1, cb2])
+
+// sự kết hợp của hàm độc lập và mảng các hàm có thể xử lý một tuyến đường 
+const cd0 = (req, res, next) => {
+    console.log('cd0');
+    next();
+}
+const cd1 = (req, res, next) => {
+    console.log('cd1');
+    next();
+}
+
+app.get('/example/d', [cd0, cd1], (req, res, next) => {
+    console.log('qua function tiep theo');
+    next();
+}, (req, res) => {
+    res.send('xin chao toi la D!, nhớ xem terminal nữa');
+})
+app.listen(3000, () => {
+    console.log('listening on port ' + port);
+})
+
+RESPONSE METHOD
+:Các phương thức trên đối tượng phản hồi(res) trong bảng sau có thẻ gửi phản hồi đến máy khách
+và chấm dứ chu kỳ request-response. nếu không có phương thức nào trong số này được gọi từ trình
+xử lý định tuyến thì yêu cầu máy khách sẽ bị treo
+
++ res.download()  : Nhắc tệp được tải xuống
++ res.end()	      : kết thúc quá trình phản hồi
++ res.json()      : gửi phản hồi json
++ res.jsonp()     : gửi phàn hồi json với hỗ trợ jsonp
++ res.redirect()  : chuyển hướng một yêu cầu
++ res.render()    : hiển thị mẫu dạng xem
++ res.send()      : gửi phản hồi ở nhiều loại khác nhau
++ res.sendFile()  : gửi tệp dưới dạng luồng octet.
++ res.sendStatus(): Đặt mã trạng thái phản hồi và gửi biểu diễn chuỗi của nó dưới dạng nội dung phản hồi
+
+APP.ROUTER
+: tạo trình xử lý tuyến đường có thể phân phối cho một đường dẫn tuyến
+: ĐƯỜNG DẪN ĐƯỢC CHỈ ĐỊNH TẠI MỘT VỊ TRÍ DUY NHẤT, tạo tuyến đường theo module rất hữu ích, giảm bớt sự dư thừa mã , lỗi
+		1. code
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+app.route('/book')
+    .get((req, res) => {
+        res.send('danh sach book');
+    })
+    .post((req, res) => {
+        res.send('add 1 quyển sách');
+    })
+    .put((req, res) => {
+        res.send('update lại thông tin sách');
+    })
+    .delete((req, res) => {
+        res.send('delete thành công 1 quyển sách ');
+    })
+
+app.listen(port, () => {
+    console.log('listening on port ' + port);
+})
+
+EXPRESS.ROUTER
+: tạo module trình xử lý tuyến đường
+ví dụ: + tạo một bộ định tuyến dưới dạng module
+	 + load một middleware, xác định một số route 
+	 + gắn module trên một đường dẫn trong ứng dụng chính
+
+		1.code 
+- tạo folder router , file index1_routing.js
+	minh họa: router/index1_routing.js
+==> code file index1_routing.js
+const express = require('express');
+const router = express.Router();
+
+// middleware giành riêng cho bộ định tuyến này
+router.use((req, res, next) => {
+    console.log('Time now: ' + Date.now());
+    next();
+})
+
+// xác định lộ trình trang home
+router.get('/', (req, res) => {
+    res.send('this is page home');
+})
+
+// xác định lộ trình trang about
+router.get('/about', (req, res) => {
+    res.send('this is about page');
+})
+
+module.exports = router;
+
+==> code file index.js
+const bird = require('./router/index1_routing');
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+app.use('/birds',bird);
+
+app.listen(port, ()=> {
+    console.log('listening on port ', port);
+});
+////////////////////////////////////////////// WRITING MIDDLEWARE ////////////////////////////////////////////
+==> Khái quát : + chức năng middleware là các function có quyền truy cập vào đối tượng req, đối tượng phản hồi res và
+next() trong chu kỳ request-resonse của ứng dụng.
+
+		+ next() là một chức năng trong bộ định tuyến Express, khi được gọi sẽ thực thi middleware kế tiếp
+middleware hiện tại. 
+==> Công việc của middleware :
+		+ Thực thi bất kì mã nào 
+		+ Thực hiện các thay đổi với các đới tượng yêu cầu và đối tượng phản hồi
+		+ Kết thúc chu kỳ requst-reponse
+		+ gọi phần mềm trung gian tiếp theo trong stack(ngăn xếp)
+==> Nếu middleware hiện tại không kết thúc chu kỳ req-res thì phải gọi next() để chuyển quyền điều khiển cho 
+middleware tiếp theo nếu không req sẽ bị treo.
+
+app.get('/', function(req,res,next)=>{
+	next();
+})
+	- get      : phương thức HTTP mà middleware sử dụng
+	- '/'      : đường dẫn mà middleware áp dụng
+	- function : middleware
+	- req      : đối số yêu cầu HTTP cho middleware
+	- res      : đối số phản hồi HTTP cho middleware
+	- next     : đối số gọi lại cho middleware
+==> để load middleware gọi app.use(nameMiddleware), chỉ định middleware
+==> thứ tự load middleware rất quan trọng , middleware được load trước thì được thực thi trước
+
+		1. code , tạo middleware, gán cho biến , load middleware
+// middleware , gán middleware cho biến , sử dụng middleware
+const express = require('express');
+
+const app = express();
+const port = 3000 ;
+
+// middleware được gán cho biến myLogger
+const myLogger = function (req, res, next) {
+    console.log('My Logger');
+    next();
+}
+// để laod middleware app.use(), chỉ định middleware
+// ví dụ đoạn mã này load middleware myLogger trước đường dẫn đến đường dẫn root
+app.use(myLogger);
+
+app.get('/', (req, res)=>{
+    console.log('chao console');
+    res.send('xin chao viet name');
+})
+
+app.listen(port, ()=> {
+    console.log('listening on port ', port);
+})
+		2. code tạo middleware , thêm thuộc tính cho đối tượng req trong middleware
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// create và gán middleware cho biến
+// thêm thộc tính vào đôi tượng req 
+const requestTime = (req, res, next) => {
+    var d = new Date();
+    req.reqTime = d.getHours();
+    next();
+}
+
+app.use(requestTime);
+
+app.get('/', (req, res) => {
+    let str = 'bây giờ là : ';
+    str += req.reqTime + ' giờ' ;
+    res.send(str);
+})
+
+
+app.listen(port, () => {
+    console.log('listening on port ', port);
+});
+///////////////////////////////////////////////////// WRITING MIDDLEWARE ///////////////////////////////////////////////
+: Middleware , gán middleware cho một biến , sử dụng middleware
+: Để load middleware app.use(), chỉ định middleware
+		1. code
+// middleware , gán middleware cho biến , sử dụng middleware
+const express = require('express');
+
+const app = express();
+const port = 3000 ;
+
+// middleware được gán cho biến myLogger
+const myLogger = function (req, res, next) {
+    console.log('My Logger');
+    next();
+}
+// để laod middleware app.use(), chỉ định middleware
+// ví dụ đoạn mã này load middleware myLogger trước đường dẫn đến đường dẫn root
+app.use(myLogger);
+
+app.get('/', (req, res)=>{
+    res.send('xin chao viet name');
+})
+
+app.listen(port, ()=> {
+    console.log('listening on port ', port);
+})
+
+==> Đối tượng phản hồi res, và đối tượng yêu cầu req
+		1. code
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// create và gán middleware cho biến
+// thêm thộc tính và đôi tượng req 
+const requestTime = (req, res, next) => {
+    var d = new Date();
+    req.reqTime = d.getHours();
+    next();
+}
+
+app.use(requestTime);
+
+app.get('/', (req, res) => {
+    let str = 'bây giờ là : ';
+    str += req.reqTime + ' giờ' ;
+    res.send(str);
+})
+
+
+app.listen(port, () => {
+    console.log('listening on port ', port);
+});
+
+///////////////////////////////////////////////////// USING MIDDLEWARE /////////////////////////////////////////////////
+: KHAI BÁO MIDDLEWARE app.use() hoặc app.METHOD()
+: Một ứng dụng exress có thể sử sụng các loại phần mềm trung gian sau:
+	+ Application-level middleware (phần mềm trung gian cấp ứng dụng)
+	+ Router-level middleware (Phần mềm trung gian cấp bộ định tuyến)
+	+ Error-Handling middleware (phần mềm trung gian xử lý lỗi)
+	+ Built-in middleware (phần mềm trung gian tích hợp)
+	+ Third-party middleware (phần mềm trung gian của bên thứ 3)
+
+==> Application-level middleware
+: liên kết middleware application-level với một intance của đối tượng app bằng cách sử dụng app.use và app.METHOD()
+	- middleware không có path , thực thi mỗi khi ứng dụng nhận được req
+	- middleware sử dụng use, thực thi cho bất kì loại req HTTP nào (GET , POST, PUT..)
+	- middleware xử lý cho từng loại req HTTP , được chỉ định phương thức (GET , PUT , POST ...)
+	- load nhiều middleware tại một điểm với một path
+	- xác định nhiều router cho cùng 1 path, tuyến thứ 2 sẽ không được gọi nếu tuyến đầu kết thúc req-res
+		+ next('route') : nhảy đến route tiếp theo có cùng path, chỉ có tác dụng với middleware load thông qua app.use()
+và router.METHOD
+
+	- sử dụng nhiều middleware để xử lý các req đến path (mảng chứa middleware )
+
+		1. code
+
+// Using middleware application-level
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// middleware này không có path , được thực thi mỗi khi ứng dụng nhận được req
+app.use((req, res, next) => {
+    console.log('Time : ', Date.now());
+    next();
+})
+
+// middleware được gắn trên path user/:userId , thực thi cho bất kì loại yêu cầu HTTP trên path
+app.use('/user/:userId', (req, res) => {
+    res.send('userId: ' + req.params.userId);
+})
+
+// middleware này xử lý các req GET với path (student/:studentId)
+app.get('/student/:studentId', (req, res) => {
+    res.send('studentId : ' + req.params.studentId);
+})
+
+// load nhiều middleware tại một điểm với một path , minh họa một stack để in URL , METHOD
+app.use('/book/:bookId', (req, res, next) => {
+    console.log('Request URL : ' + req.originalUrl);
+    next();
+}, (req, res, next) => {
+    console.log('Request Type: ' + req.method);
+    res.send('danh sach book')
+    next();
+})
+
+// xác định nhiều router cho cùng 1 path , vd : tuyến thứ 2 sẽ không được gọi nếu tuyến đầu kết thúc req-res
+app.get('/about/:aboutId', (req, res, next) => {
+    // if aboutId == 0 , next ROUTER
+    /* nhập id = 0 hoặc != 0 để biết result */
+    if (req.params.aboutId == 0) next('route'); // nhảy đến tuyến đường khác 
+    else next();
+}, (req, res) => {
+    res.send('router 2 được dùng');
+})
+
+// (*)
+app.get('/about/:aboutId', (req, res, next) => {
+    res.send('special');
+})
+
+// sử dụng nhiều middleware để xử lý các req đến path
+const logOriginalUrl = (req, res, next) => {
+    console.log('Original URL: ' + req.originalUrl);
+    next();
+}
+const logMethods = (req, res, next) => {
+    console.log('Method Type: ' + req.method);
+    next();
+}
+const logStuff = [logOriginalUrl, logMethods];
+app.get('/contacts/:id', logStuff, (req, res) => {
+    res.send('contact info !');
+})
+
+
+app.listen(port, () => {
+    console.log('listening on port ' + port);
+});
+
+==> Router-level middleware
+: phần mềm trung gian cấp bộ định tuyến hoạt động giống với application-level middleware, ngoài trừ sự ràng buộc với
+intance express.Router(), thay vì dùng app có thể gây nhầm lẫn với các thiết lập, phần router có thể không rõ ràng và khó 
+phân biệt , express cung cấp một đối tượng router(bộ định tuyến) chuyên dùng để khai báo route(tuyến đường)
+	+ const router = express.Router()
+	+ để sử dụng thêm cái này app.use(router)
+: load router-level middleware bằng cách sử dụng hàm router.use() và router.METHOD()
+		
+		1. code
+const express = require('express');
+const app = express();
+const router = express.Router();
+
+const port = 3000;
+
+// middleware không có path, thực thi cho mọi req tới router
+router.use((req, res, next) => {
+    var d = new Date();
+    console.log('Time now : ', d.getHours());
+    next();
+})
+
+// sub-stack middleware hiển thị thông tin req cho bất kì loại req HTTP nào
+router.use('/user/:userId', (req, res, next) => {
+    console.log('Request URL : ', req.originalUrl);
+    next();
+}, (req, res) => {
+    console.log('Method : ', req.method);
+})
+
+/* middleware sub-stack xử lý req GET , nếu if đúng thì chuyển đến route(tuyến đường )
+tiếp theo có cùng path , nếu không có tuyến đường nào cùng path thì vẫn thực hiện Middleware tiếp theo
+*/
+app.get('/users/:id', (req, res, next) => {
+    // nếu id == 0 thì bỏ qua middleware tiếp theo và nhảy tới router(bộ định tuyến) có cùng path
+    if (req.params.id == 0) next('route');
+    next();
+}, (req, res) => { // <== middleware tiếp theo
+    // res.send('chao người bình thường !');
+    console.log('trang bình thường ' + req.params.id);
+})
+// (*)
+app.get('/users/:id', (req, res) => {
+    // res.send('chao nguoi dac biet , id : ' + req.params.id);
+    console.log('trang đặc biệt ' + req.params.id);
+})
+// khai báo middleware 
+app.use(router);
+
+app.listen(port, () => {
+    console.log('listening on port ' + port);
+});
+==> Error-handling middleware
+: luôn luôn có 4 đối số để xác định đó là middleware error-handling ngay cả khi không sử dụng đối tượng next nếu không sẽ được hiểu
+là middleware thông thườngg ko xử lý được error.
+	- app.use((err, req, res, next))
+		1. code sử dụng erro-handling middleware 
+
+// USING ERROR-HANDLING MIDDLEWARE
+// sử dụng middleware error-handling để xử lý lỗi
+// xử lý lỗi theo path nhất định và , luôn luôn xử lý
+const express = require('express');
+const app = express();
+
+const port = 3000;
+
+// route handle
+app.get('/user/info',(req,res, next) => {
+    console.log('loi');
+    next('hãy để trong này : object error');
+})
+// middleware error-handling thực hiện với path 
+// app.use('/user/info',(err, req, res, next) => {
+//     console.log(err);
+//     res.status(500).send(err);
+// })
+// middleware error-handling luôn luôn kích hoạt khi lỗi xãy ra 
+app.use((err, req, res, next) => {
+    console.log('nếu có lỗi thì chạy');
+    res.send(err);
+    console.log(err);
+})
+
+app.listen(port, () => {
+    console.log('listening on port', port);
+})
+		2. code , sử dụng trình xử lý lỗi được tích hợp sẵn trong express
+// USING ERROR-HANDLING MIDDLEWARE
+// error-handling bằng trình xử lý lỗi mặc định do express cung cấp
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// route handler
+app.get('/product', (req, res) => {
+    let error = new Error('bad request');
+    error.statusCode = 404;
+    throw error;
+})
+
+app.listen(port, () => {
+    console.log('listening on port ' + port);
+});
+==> Built-in middleware (middleware tích hợp)
+==> Third-party middleware (middleware của bên thứ 3)
+////////////////////////////////////////////////////// Overriding the Express Api ///////////////////////////////////////////////
+: API Express bao gồm các method và properties khác nhau trên các đối tượng req , res .
+: Có 2 điểm mở rộng cho API EXPRESS
+	1. các prototype global tại express.req , express.res
+	2. các prototype dành riêng cho app tại app.req, app.res
+: việc thay đổi các prototype global sẽ ảnh hưởng đến tất cả các ứng dụng Express đã tải trong cùng một quy trình.
+: Có thể thực hiện các thay đổi dành riêng cho ứng dụng bằng các chỉ thay đổi các prototype dành riêng cho ứng dụng
+sau khi tạo ứng dụng mới.
+
+==> viết lại các phương thức , properties của express
+==> chưa học 
+
+///////////////////////////////////////////////////USING TEMPLATE ENGINES WITH EXRESSS ////////////////////////////////////////
+: Template engines cho phép bạn sử dụng template static trong ứng dụng của mình.
+: Khi chạy, template engines thay thế các biến trong template file bằng các giá trị thực tế và chuyển template thành file HTML
+và gửi đến phía máy client.
+: Express sử dụng 'jade' làm mặc định.
+	+ views 	  : thư mục chứa template file
+				ví dụ : app.set('views','./views')
+	+ view angine : công cụ mẫu để sử dụng
+				ví dụ : app.set('view engine','pug') ==> Express tải nội bộ module
+		1. code (npm install pug --save)
+- cấu trúc :
+	views/index.pug
+	index.js
+
+- code file index.pug
+
+doctype
+html(lang='en')
+    head
+        meta(charset='utf-8')
+        title=title
+    body
+    .form-group
+        label(for='name') Name
+        input.form-control(type='name', name='name' placeholder='holder' value=value)
+
+- code file index.js
+
+const express = require('express');
+
+const app = express();
+const port = 3000;
+
+// template engines được sử dụng 
+app.set('views', './views'); // thư mục chứa các template 
+app.set('view engine', 'pug'); // use template engines
+
+app.get('/', (req, res) => {
+    res.render('index', {title: 'express new', value: 'minh tuan'});
+})
+
+app.listen(port, () => {
+    console.log('listening on port', port);
+});
+///////////////////////////////////////////////////////// ERROR HANDLING /////////////////////////////////////////////////////////
+: Đề cập đến cách express bắt và xử lý các lỗi xảy ra đồng bộ và không đồng bộ.
+: Express đính kềm với một trình xử lý lỗi mặc định , nên bạn không cần phải viết handler riêng , ngoại trừ bạn muốn.
+////////////////////////////////////////////////////////// DEBUGGING ////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

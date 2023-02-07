@@ -1,0 +1,139 @@
+THAO TÁC DOM VỚI REFS
+
+: React tự động cập nhật DOM để phù hợp với đầu ra kết xuất của bạn, vì vậy các thành phần của bạn sẽ không cần thao tác với nó thường xuyên
+. Tuy nhiên, đôi khi bạn có thể cần quyền truy cập vào các phần tử DOM do React quản lý
+	vd: focus vào một node hoặc đo kích thước và vị trí của node đó.
+
+BẠN SẼ HỌC
+1. Cách truy cập node DOM do react quản lý bằng ref.
+2. Cách rè thược tính JSX liên quan đến useRef hook.
+3. Cách truy cập node DOM của component khác.
+4. Trong những trường hợp nào, việc sửa đổi Dom do React quản lý an toàn.
+
+
+//// Truy cập node DOM bằng ref
+
+b1. nhập useRef
+import {useRef} from 'react;
+
+b2. khai báo một ref bên trong thành phần
+const myRef = useRef(null);
+
+b3. chuyển nó tới node DOM dưới dạng thuộc tính(ref)
+<div ref={myRef}>
+-->  ban đầu myRef.current là null. khi tạo một node DOM cho <div>, React sẽ đặt một tham chiếu đến node này vào myRef.current. Sau đó, bạn
+có thể truy cập node DOM này từ trình xử lý sự kiện của mình và sử dụng API trình duyệt tích hợp được xác định trên node đó.
+	vd: myRef.current.scrollIntoView();
+
+VÍ DỤ : FOCUS VÀO INPUT
+
+import { useRef } from 'react';
+
+export default function Form() {
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>
+        Focus the input
+      </button>
+    </>
+  );
+}
+
+/// TRUY CẬP CÁC NODE DOM CỦA COMPONENT KHÁC
+: truyền ref qua giống với props
+
+--> trong các hệ thống thiết kế, đó là một mẫu phổ biến cho các thành phần cấp thấp như button, input,.. để chuyển tiếp các tham chiếu của 
+chúng tới các nút DOM của chúng. Mặt khác, các thành phần cấp cao như biểu mẫu, danh sách hoặc phân trang thường sẽ không hiển thị các nút
+DOM của chúng để tránh sự phụ thuộc ngẫu nhiên vào cấu trúc DOM.
+
+/// Khi React đính kèm các ref
+
+Trong react, mọi bản cập nhật được chia thành 2 giai đoạn :
+
+	- trong qua trình render, react gọi các component của bạn để tìm ra nhưng gì sẽ xuất hiện trên màn hình.
+	- trong quá trình commit. React áp dụng các thay đổi cho DOM.
+
+VÍ DỤ : Hãy xem xét mã như thế này, mã này sẽ thêm một việc cần làm mới và cuộn màn hình xuống phần tử con cuối cùng của danh sách.
+Lưu ý rằng vì một lý do nào đó, nó luôn cuộn đến việc cần làm ngay trước việc được thêm lần cuối:(CUỘN ĐẾN CHỈ MỤC GIÁP CUỐI THÔI ;)))
+
+: Vấn đề nằm ở 2 dòng này :
+setTodos([ ...todos, newTodo]);
+listRef.current.lastChild.scrollIntoView();
+--> trong React, các cập nhật state được xếp hàng đợi. Thông thường, đây là những gì bạn muốn, Tuy nhiên, ở đây đây ra sự cố do setTodos 
+không cập nhật DOM ngay lập tức. Vì vậy, khi cuộn danh sách đến phần tử cuối cùng nó vẫn chưa được thêm vào.(khắc phục ở đây là asyn/await
+ hoặc flushSync trong react-dom )
+
+/// Các phương kphaps hay nhất để thao tác DOM với refs
+: Bạn chỉ nên sử dụng chúng khi bạn phải "step outside" khỏi React. các ví dụ phổ biến về điều này bao gòm quản lý tiêu điểm, vị trí cuộn
+hoặc gọi API trình duyệt mà React không để lộ.
+
+: Nếu bạn thực hiện các hành động không phá hủy như lấy net và cuộn, bạn sẽ không gặp phải bất kỳ vẫn đề nào. Tuy nhiên, nếu bạn cố sửa đổi
+DOM theo cách thủ công, bạn có thể gặp rủi ro xung đột với những thay đổi mà React đang thực hiện.
+
+: VÍ DỤ : Để minh họa vấn đề trên thì ví dụ này bao gồm một thông báo chào mừng và 2 nút. 
+	+ button đầu tiên thì dùng điều kiện để hiện thị hoặc hidden phần tử.
+	+ button thứ 2 thì dùng remove() trong API DOM để xóa hẳn khỏi DOM.
+
+sau khi xóa phần tử DOM thông qua remove(), việc sử dụng state điều kiện để hiển thị lại sẽ gây ra lỗi, điều này là do bạn đã thay đổi DOM 
+và React không biết cách để tiếp tục quản lý nó một cách chính xác.
+
+CODE 
+import {useState, useRef} from 'react';
+
+export default function Counter() {
+  const [show, setShow] = useState(true);
+  const ref = useRef(null);
+
+  return (
+    <div>
+      <button
+        onClick={() => {
+          setShow(!show);
+        }}>
+        Toggle with setState
+      </button>
+      <button
+        onClick={() => {
+          ref.current.remove();
+        }}>
+        Remove from the DOM
+      </button>
+      {show && <p ref={ref}>Hello world</p>}
+    </div>
+  );
+}
+
+--> tránh việc thay đổi các nút DOM do React quản lý. Việc sửa đổi, thêm phần tử con vào hoặc xóa phần tử con khỏi phần tử do React quản lý
+có thể dẫn đến kết quả hình ảnh không nhất quán hoặc sự cố như trên.
+--> tuy nhiên, điều này không có nghĩa là bạn hoàn toàn không thể làm được.Nó đòi hỏi sự thận trọng. Bạn có thể sửa đổi một cách an toàn
+các phần của DOM mà React không có lý do gì để cập nhật.
+
+TÓM TẮT LẠI
+
+	- ref là một khái niệm chung, nhưng thông thường bạn sẽ sử dụng chúng để giữ các phần tử DOM.
+	- Bạn hướng dẫn React đặt nút DOM vào myRef.current bằng cách chuyển <div ref={myRef}>.
+	- Thông thường, bạn sẽ sử dụng ref cho các hành động không phá hủy như lấy nét, cuộn hoặc đo các phần tử DOM.
+	- Chuyển ref qua các component để truy cập các nút DOM của component đó.
+	- Tránh thay đổi các nut DOM do react quản lý.
+	- Nếu bạn sửa đổi các nút DOM do React quản lý, hãy sửa đổi các phần mà react không có lý do gì để cập nhật
+
+
+
+
+
+
+
+
+
+
+
+
+
+

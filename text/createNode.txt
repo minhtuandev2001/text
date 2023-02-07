@@ -1,0 +1,107 @@
+KHỞI TẠO MỘT SERVER BẰNG NODEJS
+1. npm init
+2. npm nodemon
+3. vào package.json 
+	"start": "nodemon index.js"
+
+	bai 1 : khởi tạo server bẳng http
+	
+		1. tạo file index.js
+		2. code :
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {
+        "Content-Type": "text/plain"
+    });
+    res.end("chao ban da den voi serve http");
+});
+
+server.listen(3000, () => {
+    console.log("listening on port 3000");
+})
+		3. chạy code : npm run start
+
+	bai 2 : Lấy thông tin tu trang web
+		Sử dụng package request để lấy thông tin của một trang web
+		1. npm install request
+		2. code
+const request = require('request');
+
+request('https://www.google.com', (err, res, body) => {
+    console.log(body);
+});
+	bai 3 : Nodejs với Express
+		1. npm install express
+		2. khởi tạo module server đơn giản
+		3. code
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+    res.send("Hello World!");
+})
+
+app.listen(3000,()=>{
+    console.log("listening on port 3000...");
+})
+	bai 4 : Router là gì 
+		1. cú pháp : app.METHOD(PATH, HANDLER
+			app : là một intance của module express
+			METHOD : là một phương thức yêu cầu HTTP (GET, POST, PUT hoặc DELETE)
+			HANDLER : là hàm được thực thi khi tuyến được khớp 
+		2. code :
+const express = require('express');
+
+const app = express();
+
+app.get('/student', (req, res) => {
+    res.send("danh sach sinh vien truong V")
+})
+app.get('/manager', (req, res) => {
+    res.send("trang dao tao cua truong v")
+})
+app.get('/book', (req, res) => {
+    res.send("danh sach cac dau sach lap trinh truong V")
+})
+app.get('/', (req, res) => {
+    res.send("chao mung ban den voi chung toi")
+})
+
+app.listen(3000,()=>{
+    console.log("listening on port 3000...")
+})
+	bai 5 : web đơn giản dùng express và tempalte engines
+		1. npm install pug
+		2. tạo folder views , tạo file index5.pug
+		3. code trong file pug
+html(lang='en')
+    head
+        meta(charset='utf-8')
+        title!=title
+    body
+        h1!= message
+		4. code trong index.js
+const express = require('express');
+
+const app = express();
+
+app.set('view engine', 'pug');
+app.set('views', './views');
+app.get('/', (req, res) => {
+    res.render('index5', 
+    {
+        title: 'nodejs one day',
+        message: 'dang cap'
+    })
+});
+
+app.listen(3000, ()=> {
+    console.log('listening on port 3000...')
+})
+	bai 6 : Nodejs với MONGODB
+	Nodejs có thể làm việc với MYSQL : cài mysql
+					 MongoDB : cài Mongoose
+	1. npm install mongodb
+
+		

@@ -1,0 +1,32 @@
+Thực hành axios 
+
+b1. npm install axios
+b2. import axios from 'axios'
+
+==> thao tác
+GET :
+	axios.get(url,param,config)
+
+vd1 : lấy dữ liệu qua url 
+	axios.get(url)
+		.then(data => {
+			console.log(data);
+		})
+		.catch(err => {
+			console.log(err);
+		})
+vd2 : lấy dữ liệu qua url nhưng có param
+	axios.get(url, {                    <=> url?id=1
+		params: {
+			id: 1
+		}
+	})
+	.then(data => {
+		console.log(data);
+	})
+	.catch(err => {
+		console.log(err);
+	})
+
+
+

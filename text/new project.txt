@@ -1,0 +1,41 @@
+tạo thư mục
+npm install -g expo-cli
+expo init [ten du an]
+
+cd [ten du an]
+npm start
+
+expo install firebase
+
+vào package.json thay 8.2.3
+
+ npm install
+
+1. npm install @react-navigation/native
+2. npm install @react-navigation/native-stack
+3. npm install react-native-screens react-native-safe-area-context
+4. npm install @react-navigation/bottom-tabs
+5. npm install @react-navigation/drawer
+6. npm install react-native-gesture-handler react-native-reanimated ( của Drawer) ->
+	6.1. nhớ lệnh (
+"@expo/vector-icons": "^12.0.0",
+    "@react-native-picker/picker": "^2.4.1",
+    "@react-navigation/bottom-tabs": "^6.3.1",
+    "@react-navigation/native": "^6.0.10",
+    "@react-navigation/native-stack": "^6.6.1",
+    "expo": "~44.0.0",
+    "expo-file-system": "~13.1.4",
+    "expo-image-picker": "~12.0.1",
+    "expo-location": "~14.0.1",
+    "expo-permissions": "~13.1.0",
+    "expo-status-bar": "~1.2.0",
+    "firebase": "^8.2.3",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-native": "0.64.3",
+    "react-native-image-crop-picker": "^0.37.3",
+    "react-native-maps": "^0.31.0",
+    "react-native-safe-area-context": "^4.2.4",
+    "react-native-screens": "^3.13.1",
+    "react-native-swiper": "^1.6.0",
+    "react-native-web": "0.17.1"
